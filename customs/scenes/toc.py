@@ -3,6 +3,7 @@ from manimlib import *
 
 
 class Toc(Scene):
+    """tested with commit 88df1dca in osMrPigHead/manimgl"""
     title = "目录"
     # (content, do_something(self))
     toc = [

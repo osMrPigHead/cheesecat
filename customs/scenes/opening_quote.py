@@ -3,6 +3,7 @@ from manimlib import *
 
 
 class OpeningQuote(Scene):
+    """tested with commit 6d69b8fe in osMrPigHead/manimgl"""
     # (quote, author, is_chinese, highlights)
     quote_settings = [(R"你好 世界!", r"osMrPigHead", True, {"世界!": BLUE}),
                       (R"Hello world!", r"osMrPigHead", False, {"world!": BLUE})]

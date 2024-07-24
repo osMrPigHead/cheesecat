@@ -2,7 +2,7 @@
 from typing import *
 
 from _2024._07.optics.light import *
-from _2024._07.optics.mobject import *
+from _2024._07.optics.scenes import *
 from customs.scenes import opening_quote, tips, toc
 from customs.coords import *
 from customs.utils import *
@@ -66,44 +66,9 @@ class QuestionsGeometricalOptic(Scene):
         self.wait(2)
 
 
-class QuestionsPolarization(Scene):
+class QuestionsPolarization(WavePropagation):
     """tested with commit 88df1dca in osMrPigHead/manimgl"""
-    omega = PI / 4
-    eb_time = 10
-    phi = omega * eb_time
-
-    def construct(self) -> None:
-        self.camera.frame.set_euler_angles(-PI*5/6, PI/6, PI*5/6)
-        axes_display = ThreeDAxes((-4, 4, 1), (-3, 3, 1), (-6, zm := 6, 1),
-                                  axis_config={"include_tip": True})
-        axes_field = ThreeDAxes((-0, 0.1, 1), (-0, 0.1, 1), (-6, zm, 1),
-                                axis_config={"include_tip": True})
-        field = ElectronmagneticField(
-            lambda x, y, z: (math.sin(z), 0, 0) if x == 0 and y == 0 else (0, 0, 0),
-            lambda x, y, z: (0, math.sin(z), 0) if x == 0 and y == 0 else (0, 0, 0),
-            axes_field
-        )
-        front_vect = ElectronmagneticPair(
-            (0, 0, zm), (math.sin(zm), 0, 0), (0, math.sin(zm), 0), axes_field
-        )
-        self.add(axes_display, field)
-
-        self.play(UpdateFromAlphaFunc(
-            field, lambda mob, alpha: mob.become(ElectronmagneticField(
-                lambda x, y, z: (math.sin(z - alpha * self.phi), 0, 0)
-                if x == 0 and y == 0 else (0, 0, 0),
-                lambda x, y, z: (0, math.sin(z - alpha * self.phi), 0)
-                if x == 0 and y == 0 else (0, 0, 0),
-                axes_field, opacity=1 - (1-0.4)*squish_rate_func(smooth, 2/10, 4/10)(alpha)
-            )), rate_func=linear, run_time=self.eb_time
-        ), UpdateFromAlphaFunc(
-            front_vect, lambda mob, alpha: mob.become(ElectronmagneticPair(
-                (0, 0, zm),
-                (math.sin(zm - alpha * self.phi), 0, 0),
-                (0, math.sin(zm - alpha * self.phi), 0),
-                axes_field
-            )), rate_func=linear, run_time=self.eb_time
-        ))
+    pass
 
 
 class Tips(tips.Tips):

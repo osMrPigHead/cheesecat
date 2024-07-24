@@ -1,4 +1,3 @@
-"""电磁场"""
 __all__ = [
     "ElectronmagneticPair", "ElectronmagneticField"
 ]
