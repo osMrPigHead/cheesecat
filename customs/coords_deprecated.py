@@ -3,7 +3,7 @@
 已弃用"""
 __all__ = [
     # shortcuts
-    "cross", "norm",
+    "npcross", "norm",
     # types
     "anglelike", "arraylike", "complexlike", "floatlike", "pair",
     "AngleType", "PlaneType", "LineType",
@@ -121,7 +121,7 @@ def base2z(base2: arraylike) -> np.ndarray:
     """求平面基底 base2 的叉乘"""
     if not isinstance(base2, np.ndarray):
         base2 = np.stack(base2)
-    return cross(base2[..., 0, :], base2[..., 1, :])
+    return npcross(base2[..., 0, :], base2[..., 1, :])
 
 
 @ensure_ndarray(0, "base2")
@@ -551,8 +551,8 @@ def p_line(a, b, c=None):
         b = np.array([1, b], dtype=np.float64) @ IJ_BASE2
     if not isinstance(b, np.ndarray):
         b = np.stack(b)
-    x = np.concatenate((cross(bb := projection(b), [1, 1, 1]) * BREAK,
-                        dot_each(cross(bb, projection(a)), SIGNAL, keepdims=True)), axis=-1)
+    x = np.concatenate((npcross(bb := projection(b), [1, 1, 1]) * BREAK,
+                        dot_each(npcross(bb, projection(a)), SIGNAL, keepdims=True)), axis=-1)
     x = x[..., 0, :] + x[..., 1, :] * (
             (np.sum(x[..., 0, 0:3], axis=-1, keepdims=True) == 0) |
             (np.sum(((s := np.sum(x, axis=-2)) - x)[..., 0, 0:3], axis=-1, keepdims=True) == 0)
@@ -660,7 +660,7 @@ class _Line(LineType):
         return abs(self / other)
 
     def __pow__(self, other: arraylike) -> _Plane:
-        return plane(self.reference, cross(direction(self), other))
+        return plane(self.reference, npcross(direction(self), other))
 
     def __lshift__(self, other: PlaneType) -> "_Line":
         return line(other << self.reference, other << direction(self))
@@ -698,7 +698,7 @@ def rotate2(base2, angle, x=ZERO_VECT, p=ZERO_VECT):
         angle = np.expand_dims(angle, axis=-1)
     angle = np.stack((angle, angle, np.ones(angle.shape)), axis=-2)
     base3, c = base2to3(base2)
-    base2j = ((d := cross(c, base2)) * norm(base2, axis=-1, keepdims=True) /
+    base2j = ((d := npcross(c, base2)) * norm(base2, axis=-1, keepdims=True) /
               norm(d, axis=-1, keepdims=True))
     return ((x - p) @ np.concatenate((np.real(base2 * angle + base2j * 1j*angle), c), axis=-2) @
             np.linalg.inv(base3) + p)

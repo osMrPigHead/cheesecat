@@ -3,7 +3,7 @@ from manimlib import *
 
 
 class Tips(Scene):
-    """tested with commit 88df1dca in osMrPigHead/manimgl"""
+    """tested with commit 6d69b8fe in osMrPigHead/manimgl"""
     title = "温馨提示"
     content = "你好世界!"
     max_width = FRAME_WIDTH - 3.5

@@ -1,9 +1,10 @@
 """引入和目录部分"""
 from typing import *
 
+from _2024._07.optics.animation import *
 from _2024._07.optics.light import *
-from _2024._07.optics.scenes import *
-from customs.scenes import opening_quote, tips, toc
+from _2024._07.optics.mobject import *
+from customs.scenes import opening_quote
 from customs.coords import *
 from customs.utils import *
 from manimlib import *
@@ -66,27 +67,236 @@ class QuestionsGeometricalOptic(Scene):
         self.wait(2)
 
 
-class QuestionsPolarization(WavePropagation):
-    """tested with commit 88df1dca in osMrPigHead/manimgl"""
-    pass
+class QuestionsPolarization(Scene):
+    """tested with commit 6d69b8fe in osMrPigHead/manimgl"""
+    wave_number = 1
+    omega = PI / 4
+    eb_time = 10
+    rotate_speed = 0.05
+
+    def construct(self) -> None:
+        self.add(Text("*此场景有借鉴 3Blue1Brown", font_size=36).to_edge(DOWN, buff=0.1).fix_in_frame())
+        self.camera.frame.rotate(PI / 12, axis=LEFT)
+        self.camera.frame.rotate(PI / 6, axis=DOWN)
+
+        axes_display = ThreeDAxes((-4, 4, 1), (-3, 3, 1), (-6, zm := 6, 1),
+                                  axis_config={"include_tip": True})
+        axes_display.shift(-axes_display.get_origin())
+        axes_field = ThreeDAxes((0, 0.1, 1), (0, 0.1, 1), (-6, 6, 1))
+        axes_field.shift(-axes_field.get_origin())
+        field = ElectronmagneticFieldUpdater(
+            lambda t: lambda x, y, z: (0, math.sin(self.wave_number * z - self.omega * t), 0)
+            if x == 0 and y == 0 else (0, 0, 0),
+            lambda t: lambda x, y, z: (math.sin(self.wave_number * z - self.omega * t), 0, 0)
+            if x == 0 and y == 0 else (0, 0, 0),
+            axes_field
+        ).add_updater(lambda mob: mob.set_opacity(
+            1 - (1-0.4) * smooth(clip(mob.time-3, 0, 1.5) / 1.5)
+        ))
+        front_pair = ElectronmagneticPairUpdater(
+            (0, 0, zm),
+            lambda t: (0, math.sin(self.wave_number * zm - self.omega * t), 0),
+            lambda t: (math.sin(self.wave_number * zm - self.omega * t), 0, 0),
+            axes_field
+        )
+        self.camera.frame.add_updater(lambda mob, dt: mob.rotate(self.rotate_speed * dt, axis=UP))
+
+        self.add(axes_display, field, front_pair)
+        self.wait(15)
 
 
-class Tips(tips.Tips):
-    """tested with commit 88df1dca in osMrPigHead/manimgl"""
-    content = ("本视频内容大多不是高考所要求的，不推荐正在备考的观众观看。\n"
-               "由于微积分不是高中课纲内容，本视频中数学推导均有适当简化。\n"
-               "本视频出现的公式中，矢量用加粗字母标出，但表示矢量大小的字母不加粗。\n"
-               "本视频由一名高中生制作，错误和不严谨之处在所难免，敬请指正。")
+class Toc(Scene):
+    """tested with commit 259640f5 in osMrPigHead/manimgl"""
+    p_shift = np.array((0, 0.4, 0))
+    title_p_buff = 1
+    p_buff = 0.8
+    p_edge_buff = 1
+
+    charge_radius = 0.4
+    charge_force = np.array((1, 0, 0))
+    accelerate = np.array((0.3, 0, 0))
+
+    def construct(self) -> None:
+        title = TexText(R"\large 目\,录").to_edge(UP, buff=0.4).fix_in_frame()
+        underline = Underline(title)
+        underline.set_width(underline.get_width() + 0.75).fix_in_frame()
+        self.play(Write(title, run_time=1.2), ShowCreation(underline, run_time=1.4))
+
+        self.p1 = (TexText(R"基础知识",
+                           alignment=R"\raggedright")
+                   .next_to(underline, DOWN, aligned_edge=UP, buff=self.title_p_buff)
+                   .to_edge(LEFT, buff=self.p_edge_buff)
+                   .fix_in_frame())
+        self.p2 = (TexText(R"光的本质\\\footnotesize 电磁波是什么？如何产生、传播？和光速有什么关系？",
+                           alignment=R"\raggedright")
+                   .next_to(self.p1, DOWN, aligned_edge=UP, buff=self.p_buff)
+                   .to_edge(LEFT, buff=self.p_edge_buff)
+                   .fix_in_frame())
+        self.p3 = (TexText(R"光的干涉与衍射\\\footnotesize 图样是怎么来的？干涉和衍射有什么关系？",
+                           alignment=R"\raggedright")
+                   .next_to(self.p2, DOWN, aligned_edge=UP, buff=self.p_buff)
+                   .to_edge(LEFT, buff=self.p_edge_buff)
+                   .fix_in_frame())
+        self.p4 = (TexText(R"光的折射与反射\\\footnotesize 光折射和反射现象背后的本质是什么？折射和反射定律又是为什么？",
+                           alignment=R"\raggedright")
+                   .next_to(self.p3, DOWN, aligned_edge=UP, buff=self.p_buff)
+                   .to_edge(LEFT, buff=self.p_edge_buff)
+                   .fix_in_frame())
+
+        self.p1demo()
+        self.p2demo()
+        self.p3demo()
+        self.p4demo()
+        self.wait(7)
+
+    def p1demo(self) -> None:
+        q1 = (TrueDot(color=RED, radius=self.charge_radius, glow_factor=0.4)
+              .add(Text("+", color=WHITE))
+              .to_edge(LEFT, buff=2))
+        q2 = (TrueDot(color=BLUE, radius=self.charge_radius, glow_factor=0.4)
+              # 什么? 这不是减号, 这是 en dash, 它遇水变大变高 (雾
+              .add(Text("–", color=WHITE))
+              .to_edge(RIGHT, buff=2))
+        self.play(FadeIn(self.p1, self.p_shift), FadeIn(q1), FadeIn(q2))
+
+        # 7s in total
+        force = Arrow(q1.get_right(), q1.get_right() + self.charge_force, stroke_color=YELLOW, buff=0)
+        force_tex = Tex(R"\boldmath F", color=YELLOW).next_to(force, UR, aligned_edge=DR)
+        # 0-1s
+        self.play(ShowCreation(force), Write(force_tex))
+        # 1-2s
+        self.wait(1)
+        t = 0
+
+        def accelerate(mob, dt):
+            nonlocal t
+            mob.shift(self.accelerate * (t := t + dt) * dt)
+
+        q1.add_updater(accelerate)
+        force.add_updater(accelerate)
+        force_tex.add_updater(accelerate)
+        # 2-4s
+        self.wait(2)
+
+        b_arrows = [
+            Arrow((-3, -0.35, 0.5+2**0.5/2), (-3, 0.35, 0.5+2**0.5/2),
+                  buff=0, stroke_color=BLUE)
+            .rotate(PI/4 * n, axis=LEFT, about_point=(-3, 0, 0)) for n in range(8)
+        ]
+        # 4-5.6s
+        self.play(*(FadeIn(b_arrow, time_span=(t_*0.1, t_*0.1+0.8))
+                    for b_arrow, t_ in zip(b_arrows, range(8))),
+                  Write(b_tex := Tex(R"\boldmath B", color=BLUE_D)
+                        .to_edge(LEFT, buff=3)))
+        # 5.6-6s
+        self.wait(0.4)
+
+        # 6-7s
+        self.play(*(FadeOut(mob) for mob in [q1, q2, force, force_tex, b_tex] + b_arrows))
+
+    def p2demo(self) -> None:
+        self.camera.frame.rotate(PI / 12, axis=LEFT)
+        self.camera.frame.rotate(PI / 6, axis=DOWN)
+        axes = ThreeDAxes((-4, 4, 1), (-3, 3, 1), (-3, 3, 1),
+                          axis_config={"include_tip": True}, z_axis_config={"include_tip": True})
+        axes.shift(-axes.get_origin())
+        field = ElectronmagneticFieldUpdater(
+            lambda t: lambda x, y, z: (0, 1-math.cos((t - 1)*2*PI/5.5), 0)
+            if t > 1 and y == 0 and get_norm((x, z)) <= 1 else (0, 0, 0),
+            lambda t: lambda x, y, z: npcross(UP*math.sin((t - 1)*2*PI/5.5), normalize((x, y, z)))
+            / get_norm((x, z))
+            if t > 1 and -0.5 <= y <= 0.5 and 1 <= get_norm((x, z)) <= 1.5 else (0, 0, 0),
+            axes,
+            opacity=0.5
+        )
+        self.add(field)
+        self.play(ShowCreation(axes), FadeIn(self.p2, self.p_shift))
+
+        # 7s in total
+        # 0-2.75s
+        self.wait(2.75)
+        field.set_e_func_t(
+            lambda t: lambda x, y, z: (0, 1-math.cos((t - 1)*2*PI/5.5), 0)
+            if y == 0 and get_norm((x, z)) <= 1 else
+            (0, math.sin((t - 1)*2*PI/5.5) / get_norm((x, z)), 0)
+            if -0.5 <= y <= 0.5 and 1.5 <= get_norm((x, z)) <= 2 else (0, 0, 0)
+        )
+        # 2.75-5.5s
+        self.wait(2.75)
+        self.remove(field)
+        # 5.5-6s
+        self.wait(0.5)
+        self.play(Uncreate(axes))
+        self.camera.frame.to_default_state()
+
+    def p3demo(self) -> None:
+        self.camera.frame.rotate(PI / 6, axis=LEFT)
+        self.camera.frame.rotate(PI / 4, axis=DOWN)
+        slits = SGroup(Prism(width=0.2, height=0.8, depth=0.2, color=BLACK),
+                       Prism(width=0.2, height=0.8, depth=1.1, color=BLACK)
+                       .move_to((0, 0, -0.3), aligned_edge=OUT),
+                       Prism(width=0.2, height=0.8, depth=1.1, color=BLACK)
+                       .move_to((0, 0, 0.3), aligned_edge=IN),
+                       Prism(width=0.2, height=0.6, depth=2.8, color=BLACK)
+                       .move_to((0, 0.4, 0), aligned_edge=DOWN),
+                       Prism(width=0.2, height=0.6, depth=2.8, color=BLACK)
+                       .move_to((0, -0.4, 0), aligned_edge=UP))
+        glow = GlowDot((-4, 0, 0), radius=0.4)
+        # 调整图层顺序
+        self.remove(self.p1, self.p2)
+        self.add(slits, glow)
+        self.add(self.p1, self.p2)
+        self.play(ShowCreation(slits), FadeIn(glow), FadeIn(self.p3, self.p_shift))
+
+        # 8s in total
+        # 0-2.5s
+        self.play(XZBroadcast(glow.get_center(), big_radius=4.2, color=YELLOW, run_time=2.5))
+        # 2.5-5s
+        self.play(XZBroadcast((0, 0, -0.15), big_radius=4.2, color=YELLOW, run_time=2.5),
+                  XZBroadcast((0, 0, 0.15), big_radius=4.2, color=YELLOW))
+        image = ImageMobject("screen.png", height=0.4).move_to((4, 0, 0)).rotate(PI/2, UP)
+        # 5-6s
+        self.play(FadeIn(image))
+        # 6-7s
+        self.wait(1)
+        self.play(*(FadeOut(mob) for mob in [slits, glow, image]))
+        self.camera.frame.to_default_state()
+
+    def p4demo(self) -> None:
+        axes = Axes((-4, 4, 1), (-2, 3, 1))
+        field = ElectronmagneticFieldUpdater(
+            lambda t: lambda x, y: (math.sin(t-1)*(2/3 if y > 0 else 1/2), 0)
+            if t > 1 else (0, 0),
+            lambda t: lambda x, y: (0, 0),
+            axes,
+            step_multiple=1
+        )
+
+        charge_time = 0
+
+        def charge_updater(mob, dt):
+            nonlocal charge_time
+            mob.shift(((-math.sin(charge_time)+math.sin(charge_time := charge_time + dt))/3, 0, 0))
+
+        charges = Group(*(
+            TrueDot(color=BLUE, radius=self.charge_radius/2, glow_factor=0.4)
+            .add(Text("–", font_size=24, color=WHITE))
+            .move_to(axes.c2p(x+0.5, 0, 0))
+            for x in range(-4, 4, 1)
+        )).add_updater(charge_updater)
+        self.add(field)
+        # 调整图层顺序
+        self.remove(self.p1, self.p2, self.p3)
+        self.add(axes, charges)
+        self.add(self.p1, self.p2, self.p3)
+        self.play(ShowCreation(axes), FadeIn(charges), FadeIn(self.p4, self.p_shift))
+        self.wait(3*PI)
+        self.remove(field)
+        self.play(*(FadeOut(mob) for mob in [axes, charges]))
 
 
-class Toc(toc.Toc):
-    """tested with commit 88df1dca in osMrPigHead/manimgl"""
-    # TODO: 中间过程播放相应视频
-    toc = [
-        (R"光的本质\\"
-         R"\footnotesize 光是什么？电磁场的变化如何激发电磁波？电磁波如何在空间中传递？", lambda x: x.wait(4)),
-        (R"光的干涉与衍射\\"
-         R"\footnotesize 干涉图样何来？干涉与衍射有何联系？", lambda x: x.wait(4)),
-        (R"光的折射与反射\\"
-         R"\footnotesize 光为何``弯折''？光为何变慢？反射角与入射角为何恰巧相等？", lambda x: x.wait(4))
-    ]
+class ComingSoon(Scene):
+    """tested with commit 259640f5 in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        self.play(Write(Text("敬请期待", font_size=144), run_time=6))
+        self.wait(1)

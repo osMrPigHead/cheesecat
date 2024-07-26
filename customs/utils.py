@@ -1,5 +1,5 @@
 __all__ = [
-    "cross", "random", "fullrand", "included_angle", "row_nditer"
+    "npcross", "random", "fullrand", "included_angle", "row_nditer"
 ]
 
 from random import Random
@@ -9,7 +9,7 @@ import numpy as np
 
 # PyCharm 用 np.cross 有一些奇奇怪怪的错误提示
 # 就单独把 cross 函数拿出来避免这种提示 (强迫症
-cross = np.cross
+npcross = np.cross
 random = Random(time.time())
 
 
