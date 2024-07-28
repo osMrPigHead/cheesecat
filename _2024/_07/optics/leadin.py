@@ -4,6 +4,7 @@ from typing import *
 from _2024._07.optics.animation import *
 from _2024._07.optics.light import *
 from _2024._07.optics.mobject import *
+from _2024._07.optics.scenes import *
 from customs.scenes import opening_quote
 from customs.coords import *
 from customs.utils import *
@@ -76,6 +77,8 @@ class QuestionsPolarization(Scene):
 
     def construct(self) -> None:
         self.add(Text("*此场景有借鉴 3Blue1Brown", font_size=36).to_edge(DOWN, buff=0.1).fix_in_frame())
+        # 为什么不用欧拉角? 因为我不会 (bushi
+        # 这样写更直观不是么 (
         self.camera.frame.rotate(PI / 12, axis=LEFT)
         self.camera.frame.rotate(PI / 6, axis=DOWN)
 
@@ -105,43 +108,15 @@ class QuestionsPolarization(Scene):
         self.wait(15)
 
 
-class Toc(Scene):
+class Toc(TocParent):
     """tested with commit 259640f5 in osMrPigHead/manimgl"""
-    p_shift = np.array((0, 0.4, 0))
-    title_p_buff = 1
-    p_buff = 0.8
-    p_edge_buff = 1
-
     charge_radius = 0.4
     charge_force = np.array((1, 0, 0))
     accelerate = np.array((0.3, 0, 0))
 
     def construct(self) -> None:
-        title = TexText(R"\large 目\,录").to_edge(UP, buff=0.4).fix_in_frame()
-        underline = Underline(title)
-        underline.set_width(underline.get_width() + 0.75).fix_in_frame()
-        self.play(Write(title, run_time=1.2), ShowCreation(underline, run_time=1.4))
-
-        self.p1 = (TexText(R"基础知识",
-                           alignment=R"\raggedright")
-                   .next_to(underline, DOWN, aligned_edge=UP, buff=self.title_p_buff)
-                   .to_edge(LEFT, buff=self.p_edge_buff)
-                   .fix_in_frame())
-        self.p2 = (TexText(R"光的本质\\\footnotesize 电磁波是什么？如何产生、传播？和光速有什么关系？",
-                           alignment=R"\raggedright")
-                   .next_to(self.p1, DOWN, aligned_edge=UP, buff=self.p_buff)
-                   .to_edge(LEFT, buff=self.p_edge_buff)
-                   .fix_in_frame())
-        self.p3 = (TexText(R"光的干涉与衍射\\\footnotesize 图样是怎么来的？干涉和衍射有什么关系？",
-                           alignment=R"\raggedright")
-                   .next_to(self.p2, DOWN, aligned_edge=UP, buff=self.p_buff)
-                   .to_edge(LEFT, buff=self.p_edge_buff)
-                   .fix_in_frame())
-        self.p4 = (TexText(R"光的折射与反射\\\footnotesize 光折射和反射现象背后的本质是什么？折射和反射定律又是为什么？",
-                           alignment=R"\raggedright")
-                   .next_to(self.p3, DOWN, aligned_edge=UP, buff=self.p_buff)
-                   .to_edge(LEFT, buff=self.p_edge_buff)
-                   .fix_in_frame())
+        self.play(Write(self.title, run_time=1.2),
+                  ShowCreation(self.underline, run_time=1.4))
 
         self.p1demo()
         self.p2demo()

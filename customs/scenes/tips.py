@@ -1,4 +1,8 @@
 """温馨提示"""
+__all__ = [
+    "Tips"
+]
+
 from manimlib import *
 
 

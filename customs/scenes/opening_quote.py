@@ -1,12 +1,16 @@
 """开场名言"""
+__all__ = [
+    "OpeningQuote"
+]
+
 from manimlib import *
 
 
 class OpeningQuote(Scene):
     """tested with commit 6d69b8fe in osMrPigHead/manimgl"""
     # (quote, author, is_chinese, highlights)
-    quote_settings = [(R"你好 世界!", r"osMrPigHead", True, {"世界!": BLUE}),
-                      (R"Hello world!", r"osMrPigHead", False, {"world!": BLUE})]
+    quote_settings = [(R"你好 世界!", R"osMrPigHead", True, {"世界!": BLUE}),
+                      (R"Hello world!", R"osMrPigHead", False, {"world!": BLUE})]
     use_quotation_marks = True
     max_width = FRAME_WIDTH - 1
     quote_buff = 1
