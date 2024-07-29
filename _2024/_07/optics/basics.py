@@ -1,6 +1,8 @@
 """基础知识篇"""
 from _2024._07.optics.scenes import *
+from customs.coords import *
 from customs.scenes import opening_quote
+from customs.utils import *
 from manimlib import *
 
 
@@ -55,8 +57,8 @@ class CoulumbsLaw(Scene):
                      .next_to(force2, UP, aligned_edge=DOWN))
         figure = Group(force1, force1tex, force2, force2tex, q1, q2)
         self.add(q1, q2)
-
         self.wait(1)
+
         self.remove(q1, q2)
         self.add(force1, force2, force1tex, force1tex)
         self.add(q1, q2)
@@ -75,9 +77,10 @@ class CoulumbsLaw(Scene):
         title = Text("静电力", font_size=56).to_edge(UP)
         self.play(Write(title))
         self.wait(1.5)
+
         coulombs_law = Tex(
             R"\vec{F}_{12} = k {q_1 q_2 \over r_{12}^2} \vec{e}_{r12}"
-        ).move_to((0, -1, 0))
+        ).move_to((0, -1, 0)).use_winding_fill(False)
         self.play(FadeTransform(title, Text("库仑定律", font_size=56).to_edge(UP)),
                   figure.animate.shift((0, 1.5, 0)),
                   Write(coulombs_law))
@@ -104,4 +107,24 @@ class CoulumbsLaw(Scene):
         self.play(ApplyWave(coulombs_law[R"q_1 q_2"]))
         self.wait(1)
         self.play(ApplyWave(coulombs_law[R"r_{12}^2"]))
+        self.wait(3)
+
+        self.play(Transform(q1, TrueDot(radius=DEFAULT_DOT_RADIUS, color=RED)
+                            .make_3d()
+                            .add(Text("", color=WHITE))
+                            .move_to((-2, 1.5, 0))),
+                  Transform(q2, TrueDot(radius=DEFAULT_DOT_RADIUS, color=BLUE)
+                            .make_3d()
+                            .add(Text("", color=WHITE))
+                            .move_to((2, 1.5, 0))))
+        self.wait(3)
+        points = [q1.get_center().copy()]
+        for i in range(3):
+            for j in range(3):
+                points += [points[-1] + coord(fullrand(0.2), fullrand(0.2))]
+            self.play(MoveAlongPath(q1, CubicBezier(*points[-4:]), run_time=0.6))
+        for i in range(2):
+            points += [points[-1] + coord(fullrand(0.2), fullrand(0.2))]
+        points += [points[0]]
+        self.play(MoveAlongPath(q1, CubicBezier(*points.copy()[-4:]), run_time=0.6))
         self.wait(1)

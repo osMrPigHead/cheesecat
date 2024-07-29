@@ -221,11 +221,11 @@ class CCVector:
 vectorlike = tuple[float, float] | CCVector
 
 
-def coord(x: float | vectorlike, y: float = None) -> tuple[float, float, float]:
+def coord(x: float | vectorlike, y: float = None) -> np.ndarray:
     """ManimGL 坐标"""
     if not isinstance(x, float | int):
         x, y = x
-    return x * FRAME_X_RADIUS, y * FRAME_Y_RADIUS, 0
+    return np.array((x * FRAME_X_RADIUS, y * FRAME_Y_RADIUS, 0))
 
 
 equation_builder = tuple[vectorlike, anglelike | float | vectorlike]
