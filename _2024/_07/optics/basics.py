@@ -35,8 +35,8 @@ class Blackboard(Scene):
         pass
 
 
-class CoulumbsLaw(Scene):
-    """tested with commit cb1d27e4 in osMrPigHead/manimgl
+class CoulombsLaw(Scene):
+    """tested with commit 7766b22a in osMrPigHead/manimgl
     换版本是因为旧版的 TrueDot 真的太丑了"""
     charge_radius = 0.3
 
@@ -99,7 +99,7 @@ class CoulumbsLaw(Scene):
         self.wait(1)
         self.play(TransformMatchingTex(coulombs_law, coulombs_law := Tex(
             R"\vec{F}_{12} = {1 \over 4 \pi \varepsilon_0} {q_1 q_2 \over r_{12}^2} \vec{e}_{r12}"
-        ).move_to((0, -1, 0)), key_map={R"k": R"{1 \over 4 \pi \varepsilon_0}"}),
+        ).move_to((0, -1, 0)), key_map={R"k": R"{1 \over 4 \pi \varepsilon_0}"}, run_time=1),
                   FadeTransform(k_tex, TexText(R"\footnotesize 真空介电常量", color=YELLOW)
                                 .next_to(coulombs_law[R"\varepsilon_0"], DOWN, aligned_edge=UP)
                                 .use_winding_fill(False)))
