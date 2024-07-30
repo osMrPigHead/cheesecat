@@ -125,43 +125,6 @@ class CoulombsLaw(Scene):
         self.wait(1)
 
 
-class BlackboardEField(Scene):
-    """tested with commit 259640f5 in osMrPigHead/manimgl"""
-    def construct(self) -> None:
-        # self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT).to_edge(LEFT, buff=0))  # 答题卡裁切线 (bushi
-
-        coulombs_law_title = Text("库仑定律:", font_size=36).to_edge(UL, buff=0.5)
-        coulombs_law = Tex(
-            R"\vec{F}_{12} = {1 \over 4 \pi \varepsilon_0} {q_0 q \over r^2} \vec{e}_{r}"
-        ).scale(0.75).next_to(coulombs_law_title, RIGHT, aligned_edge=LEFT, buff=1)
-        self.add(coulombs_law_title, coulombs_law)
-        self.wait()
-        self.play(ShowCreationThenFadeAround(coulombs_law[R"q"]))
-        self.wait()
-
-        e_field_intensity_title = (Text("电场强度:", font_size=36)
-                                   .next_to(coulombs_law_title, DOWN, aligned_edge=UP, buff=0.8))
-        e_field_intensity = Tex(
-            R"\vec{E} = {\vec{F} \over q} = {1 \over 4 \pi \varepsilon_0} {q_0 \over r^2} \vec{e}_{r}"
-        ).scale(0.75).next_to(e_field_intensity_title, RIGHT, aligned_edge=LEFT, buff=1)
-        f_qe = Tex(
-            R"\vec{F} = q \vec{E}"
-        ).scale(0.75).next_to(e_field_intensity_title, DOWN, aligned_edge=UP, buff=0.6)
-        self.play(Write(e_field_intensity_title))
-        self.play(Write(e_field_intensity[R"\vec{E} = {\vec{F} \over q}"]))
-        self.wait()
-        self.play(TransformFromCopy(
-            coulombs_law[R"= {1 \over 4 \pi \varepsilon_0} {q_0 q \over r^2} \vec{e}_{r}"],
-            e_field_intensity[R"= {1 \over 4 \pi \varepsilon_0} {q_0 \over r^2} \vec{e}_{r}"],
-            path_arc=2,
-            path_arc_axis=IN,
-            run_time=2
-        ))
-        self.wait()
-        self.play(Write(f_qe))
-        self.wait()
-
-
 class EField(Scene):
     """tested with commit 656f98fd in osMrPigHead/manimgl"""
     source_charge_radius = 0.3
@@ -271,4 +234,54 @@ class UniformEField(Scene):
         self.wait()
         title = Text("匀强电场", font_size=56).to_edge(UP)
         self.play(FadeIn(BackgroundRectangle(title)), Write(title))
+        self.wait()
+
+
+class Potential(Scene):
+    """tested with commit 259640f5 in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        pass
+
+
+class Blackboard(Scene):
+    """tested with commit 259640f5 in osMrPigHead/manimgl"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.coulombs_law_title = Text("库仑定律:", font_size=36).to_edge(UL, buff=0.5)
+        self.coulombs_law = Tex(
+            R"\vec{F}_{12} = {1 \over 4 \pi \varepsilon_0} {q_0 q \over r^2} \vec{e}_{r}"
+        ).scale(0.75).next_to(self.coulombs_law_title, RIGHT, aligned_edge=LEFT, buff=1)
+
+        self.e_field_intensity_title = (Text("电场强度:", font_size=36)
+                                   .next_to(self.coulombs_law_title, DOWN, aligned_edge=UP, buff=0.8))
+        self.e_field_intensity = Tex(
+            R"\vec{E} = {\vec{F} \over q} = {1 \over 4 \pi \varepsilon_0} {q_0 \over r^2} \vec{e}_{r}"
+        ).scale(0.75).next_to(self.e_field_intensity_title, RIGHT, aligned_edge=LEFT, buff=1)
+        self.f_qe = Tex(
+            R"\vec{F} = q \vec{E}"
+        ).scale(0.75).next_to(self.e_field_intensity_title, DOWN, aligned_edge=UP, buff=0.6)
+
+    def construct(self) -> None:
+        # self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT).to_edge(LEFT, buff=0))  # 答题卡裁切线 (bushi
+        self.e_field()
+
+    def e_field(self) -> None:
+        self.add(self.coulombs_law_title, self.coulombs_law)
+        self.wait()
+        self.play(ShowCreationThenFadeAround(self.coulombs_law[R"q"]))
+        self.wait()
+
+        self.play(Write(self.e_field_intensity_title))
+        self.play(Write(self.e_field_intensity[R"\vec{E} = {\vec{F} \over q}"]))
+        self.wait()
+        self.play(TransformFromCopy(
+            self.coulombs_law[R"= {1 \over 4 \pi \varepsilon_0} {q_0 q \over r^2} \vec{e}_{r}"],
+            self.e_field_intensity[R"= {1 \over 4 \pi \varepsilon_0} {q_0 \over r^2} \vec{e}_{r}"],
+            path_arc=2,
+            path_arc_axis=IN,
+            run_time=2
+        ))
+        self.wait()
+        self.play(Write(self.f_qe))
         self.wait()
