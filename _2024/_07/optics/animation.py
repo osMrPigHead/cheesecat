@@ -1,8 +1,8 @@
 __all__ = [
-    "XZBroadcast"
+    "XZBroadcast", "MoveAlongBezier"
 ]
 
-from typing import *
+from typing import Sequence
 
 from customs.wrappers import *
 from manimlib import *
@@ -49,3 +49,26 @@ class XZBroadcast(LaggedStart):
             remover=remover,
             **kwargs
         )
+
+
+class MoveAlongBezier(Animation):
+    def __init__(
+            self,
+            mobject: Mobject,
+            points: Sequence[Sequence[float] | np.ndarray] | np.ndarray,
+            suspend_mobject_updating: bool = False,
+            **kwargs
+    ):
+        super().__init__(mobject, suspend_mobject_updating=suspend_mobject_updating, **kwargs)
+        self.p = []
+        for p in points:
+            if not isinstance(p, np.ndarray):
+                self.p += [np.array(p)]
+                continue
+            self.p += [p]
+        self.n = len(self.p) - 1
+
+    def interpolate_mobject(self, alpha: float) -> None:
+        t = self.rate_func(alpha)
+        self.mobject.move_to(sum((math.comb(self.n, i) * self.p[i] * (1-t)**(self.n-i) * t**i
+                                  for i in range(self.n+1))))

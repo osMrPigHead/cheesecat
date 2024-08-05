@@ -1,10 +1,14 @@
 __all__ = [
     "ElectronmagneticPair", "ElectronmagneticPairUpdater",
-    "ElectronmagneticField", "ElectronmagneticFieldUpdater"
+    "ElectronmagneticField", "ElectronmagneticFieldUpdater",
+    "Ball", "Charge", "AxesCharge"
 ]
 
-from typing import *
+from typing import Callable, Self, Sequence
 
+import numpy as np
+
+from customs.constants import *
 from customs.wrappers import *
 from manimlib import *
 
@@ -249,3 +253,85 @@ class ElectronmagneticFieldUpdater(ElectronmagneticField):
         self.set_b_func(self.b_func_t(self.time))
 
         return self
+
+
+class Ball(TrueDot):
+    def __init__(
+            self,
+            pos: tuple[float, float, float] | np.ndarray,
+            radius: float = 0.3,
+            three_d: bool = True,
+            color: str | Color | None = GREY,
+            text: str | None = None,
+            font_size: int = 48,
+            **kwargs
+    ):
+        super().__init__(radius=radius, color=color, **kwargs)
+        if three_d:
+            self.make_3d()
+        self.add(Text([text, ""][text is None], font_size=font_size))
+        self.move_to(pos)
+
+    @property
+    def pos(self) -> np.ndarray:
+        return self[0].get_center()
+
+
+class Charge(Ball):
+    def __init__(
+            self,
+            pos: tuple[float, float, float] | np.ndarray,
+            kq: float,
+            radius: float = 0.3,
+            font_size: int = 48,
+            three_d: bool = True,
+            **kwargs
+    ):
+        positive = kq > 0
+        self.kq = kq
+
+        super().__init__(pos, radius, three_d, [BLUE, RED][positive],
+                         [EN_DASH, "+"][positive] if font_size else "", font_size if font_size else 48, **kwargs)
+
+    def get_e(self, pos: tuple[float, float, float] | np.ndarray) -> np.ndarray:
+        if norm := get_norm(vect := self.pos - pos):
+            return self.kq / norm ** 2 * -normalize(vect)
+        return np.zeros((3,))
+
+    def get_phi(self, pos: tuple[float, float, float] | np.ndarray) -> float:
+        if norm := get_norm(self.pos - pos):
+            return self.kq / norm
+        return np.inf
+
+
+class AxesCharge(Charge):
+    def __init__(
+            self,
+            axes: CoordinateSystem,
+            coords: tuple[float, ...],
+            kq: float,
+            radius: float = 0.3,
+            font_size: int = 48,
+            three_d: bool = True,
+            **kwargs
+    ):
+        self.axes = axes
+        super().__init__(axes.c2p(*coords), kq, radius, font_size, three_d, **kwargs)
+
+    @property
+    def coords(self) -> np.ndarray:
+        return np.array(self.axes.p2c(self.pos))
+
+    def get_e(self, x: tuple[float, ...] | np.ndarray, real: bool = False) -> np.ndarray:
+        if real:
+            return super().get_e(x)
+        if norm := get_norm(vect := self.coords - x):
+            return self.kq / norm ** 2 * -normalize(vect)
+        return np.zeros(self.coords.shape)
+
+    def get_phi(self, x: tuple[float, ...] | np.ndarray, real: bool = False) -> float:
+        if real:
+            return super().get_phi(x)
+        if norm := get_norm(self.coords - x):
+            return self.kq / norm
+        return np.inf
