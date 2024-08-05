@@ -518,7 +518,7 @@ class Blackboard(Scene):
                  self.e_field_intensity_title, self.e_field_intensity, self.f_qe)
         self.wait()
 
-        self.play(ShowCreationThenFadeAround(self.e_field_intensity[R"q_0"]))
+        self.play(ShowCreationThenFadeAround(self.f_qe[R"q"]))
         self.wait()
         self.play(Write(w := Tex(R"W = \vec{F} \cdot \Delta\vec{r}", color=BLUE).scale(0.75)
                         .next_to(self.f_qe, RIGHT, aligned_edge=LEFT, buff=2)
@@ -535,3 +535,7 @@ class Blackboard(Scene):
         self.wait()
         self.play(Transform(self.phi_unit_1, self.phi_unit_2))
         self.wait()
+
+    def conduction_current(self) -> None:
+        # TODO N/C -> V/m 改稿子
+        pass
