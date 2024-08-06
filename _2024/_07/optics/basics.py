@@ -9,14 +9,33 @@ from customs.utils import *
 from manimlib import *
 
 
+# class OpeningQuote(opening_quote.OpeningQuote):
+#     """tested with commit 259640f5 in osMrPigHead/manimgl"""
+#     quote_settings = [
+#         (R"Thoroughly conscious ignorance is the prelude to every real advance in science.",
+#          R"James C. Maxwell", False, {"ignorance": BLUE}),
+#         (R"对无知充分的清醒，才是知识真正发展的前奏曲。",
+#          R"詹姆斯·麦克斯韦", True, {"无知": BLUE})
+#     ]
+
+
 class OpeningQuote(opening_quote.OpeningQuote):
-    """tested with commit 259640f5 in osMrPigHead/manimgl"""
+    """tested with commit 259640f5 in osMrPighead/manimgl"""
     quote_settings = [
-        (R"Thoroughly conscious ignorance is the prelude to every real advance in science.",
-         R"James C. Maxwell", False, {"ignorance": BLUE}),
-        (R"对无知充分的清醒，才是知识真正发展的前奏曲。",
-         R"詹姆斯·麦克斯韦", True, {"无知": BLUE})
+        (R"没有昨日的基础科学，就没有今日的技术革命。",
+         R"李政道", True, {"基础科学": BLUE, "技术革命": BLUE})
     ]
+
+    def construct(self) -> None:
+        self.quotes, self.authors = self.get_quotes_and_authors()
+        self.play(*(VFadeIn(quote, run_time=self.run_time_per_char * max(len(quote) for quote, _, _, _
+                                                                         in self.quote_settings),
+                            lag_ratio=self.lag_ratio) for quote in self.quotes))
+        self.wait(2)
+        self.play(Write(Text("李政道教授于美国时间8月4日在旧金山因病逝世，以此纪念李教授对物理学作出的卓越贡献",
+                             font_size=24).to_edge(DOWN)),
+                  *(Write(author, run_time=3) for author in self.authors))
+        self.wait(2)
 
 
 class Toc(TocParent):
@@ -185,6 +204,26 @@ class EField(QProbeCircling):
         self.play(WiggleOutThenIn(self.force))
 
 
+class EFieldAnimatedStreamLines(QProbeCircling):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        self.add(self.axes, self.field, self.q_source, self.force, self.q_probe)
+        self.field.become(VectorField(
+            lambda x, y: self.q_source.get_e((x, y)) / 4,
+            self.axes
+        ))
+        self.add(BackgroundRectangle(title := Text("电场", font_size=56).to_edge(UP)), title)
+        self.q_probe.move_to(self.axes.c2p(-3, -2))
+        asl = AnimatedStreamLines(StreamLines(
+            lambda x, y: (x*0.7+y*0.5, y*0.7-x*0.5),
+            self.axes,
+            magnitude_range=(0.5, 5)
+        ))
+        self.add(asl)
+        self.wait(10)
+        self.play(stroke_fade_update(asl, 0, smooth, 1))
+
+
 class UniformEField(Scene):
     """tested with commit 259640f5 in osMrPigHead/manimgl"""
     kq = 2
@@ -252,8 +291,8 @@ class PotentialLeadin(QProbeCircling):
                    .rotate(PI/2, axis=RIGHT))
 
         self.play(
-            fadein_update(phi, 0.8),
-            stroke_fadein_update(SurfaceMesh(phi), 0.8),
+            fade_update(phi, 0.8),
+            stroke_fade_update(SurfaceMesh(phi), 0.8),
             camera_update(self, [], [(PI/3, RIGHT, rush_from), (PI/4, OUT, linear)], 1.5),
             Write(title), Write(phi_tex),
             run_time=2
@@ -399,8 +438,8 @@ class Potential(Scene):
         self.add(phi, mesh,
                  zero := Ball((6, 0, 0), 0.08, color=WHITE), zero_tex, title)
         self.play(
-            fadein_update(phi, 0.8, suspend_mobject_updating=True),
-            stroke_fadein_update(mesh, 0.8, suspend_mobject_updating=True),
+            fade_update(phi, 0.8, suspend_mobject_updating=True),
+            stroke_fade_update(mesh, 0.8, suspend_mobject_updating=True),
             camera_update(self, [], [(PI/3, RIGHT, rush_from), (PI/4, OUT)], 2),
             run_time=2
         )
@@ -441,8 +480,6 @@ class PotentialFormula(Scene):
                         np.array((4, 1, 0)), np.array((4, 0, 0))),
             UR, aligned_edge=DL, buff=0.75
         )))
-        self.wait()
-        self.play(FadeIn(w))
         self.wait()
         self.play(*(FadeOut(mob) for mob in [coulombs_law, coulombs_law_back, gravity_law, gravity_law_back, w]))
 

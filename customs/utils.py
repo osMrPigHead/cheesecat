@@ -1,7 +1,7 @@
 __all__ = [
     "npcross", "random", "fullrand", "included_angle", "row_nditer",
-    "fadein_update_", "fadein_update",
-    "stroke_fadein_update_", "stroke_fadein_update",
+    "fade_update_", "fade_update",
+    "stroke_fade_update_", "stroke_fade_update",
     "camera_update_", "camera_update",
     "color_by_z"
 ]
@@ -37,28 +37,31 @@ def row_nditer(*op: np.ndarray, rw: bool = False):
     return np.nditer(op, flags=["external_loop"], order="F")
 
 
-def fadein_update_(dest_opacity: float, rate_func: Callable[[float], float] = smooth) \
+def fade_update_(dest_opacity: float, rate_func: Callable[[float], float] = smooth, src_opacity: float = 0) \
         -> Callable[[Mobject, float], None]:
     def updater(mob: Mobject, alpha: float) -> None:
-        mob.set_opacity(dest_opacity * rate_func(alpha))
+        mob.set_opacity(src_opacity + (dest_opacity - src_opacity) * rate_func(alpha))
     return updater
 
 
-def fadein_update(mob: Mobject, dest_opacity: float, rate_func: Callable[[float], float] = smooth, **kwargs) \
+def fade_update(mob: Mobject, dest_opacity: float, rate_func: Callable[[float], float] = smooth,
+                src_opacity: float = 0, **kwargs) \
         -> UpdateFromAlphaFunc:
-    return UpdateFromAlphaFunc(mob, fadein_update_(dest_opacity, rate_func), rate_func=linear, **kwargs)
+    return UpdateFromAlphaFunc(mob, fade_update_(dest_opacity, rate_func, src_opacity), rate_func=linear, **kwargs)
 
 
-def stroke_fadein_update_(dest_opacity: float, rate_func: Callable[[float], float] = smooth) \
+def stroke_fade_update_(dest_opacity: float, rate_func: Callable[[float], float] = smooth, src_opacity: float = 0) \
         -> Callable[[VMobject, float], None]:
     def updater(mob: VMobject, alpha: float) -> None:
-        mob.set_stroke(opacity=dest_opacity * rate_func(alpha))
+        mob.set_stroke(opacity=src_opacity + (dest_opacity - src_opacity) * rate_func(alpha))
     return updater
 
 
-def stroke_fadein_update(mob: VMobject, dest_opacity: float, rate_func: Callable[[float], float] = smooth, **kwargs) \
+def stroke_fade_update(mob: VMobject, dest_opacity: float, rate_func: Callable[[float], float] = smooth,
+                       src_opacity: float = 0, **kwargs) \
         -> UpdateFromAlphaFunc:
-    return UpdateFromAlphaFunc(mob, stroke_fadein_update_(dest_opacity, rate_func), rate_func=linear, **kwargs)
+    return UpdateFromAlphaFunc(mob, stroke_fade_update_(dest_opacity, rate_func, src_opacity),
+                               rate_func=linear, **kwargs)
 
 
 def camera_update_(src_state: Sequence[tuple[float, np.ndarray]],

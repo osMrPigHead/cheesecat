@@ -21,7 +21,7 @@ class OpeningQuote(Scene):
     def construct(self) -> None:
         self.quotes, self.authors = self.get_quotes_and_authors()
         self.play(*(VFadeIn(quote, run_time=self.run_time_per_char * max(len(quote) for quote, _, _, _
-                                                                        in self.quote_settings),
+                                                                         in self.quote_settings),
                             lag_ratio=self.lag_ratio) for quote in self.quotes))
         self.wait(2)
         self.play(*(Write(author, run_time=3) for author in self.authors))
