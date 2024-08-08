@@ -197,7 +197,8 @@ class EField(QProbeCircling):
         self.wait()
 
         # Blackboard 分屏
-        # self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT))  # 答题卡裁切线 (bushi
+        if DEBUG:
+            self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT))  # 答题卡裁切线 (bushi
         self.play(MoveAlongPath(self.q_probe, Line(self.axes.c2p(-3, -2),
                                                    self.axes.c2p(-2, -2))))
         self.wait()
@@ -393,7 +394,8 @@ class Potential(Scene):
         self.wait()
 
         # Blackboard 分屏
-        # self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT))  # 答题卡裁切线 (bushi
+        if DEBUG:
+            self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT))  # 答题卡裁切线 (bushi
         self.play(source.animate.move_to((-1, 0, 0)), probe1.animate.move_to((1, 2, 0)),
                   zero.animate.move_to((6, 0, 0)))
         self.wait()
@@ -484,12 +486,93 @@ class PotentialFormula(Scene):
         self.play(*(FadeOut(mob) for mob in [coulombs_law, coulombs_law_back, gravity_law, gravity_law_back, w]))
 
 
+class ConductionCurrent(Scene):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        conduction_line = Cylinder(height=8, radius=0.15, color=GREY_D).rotate(PI/2, UP)
+        self.add(conduction_line)
+        self.wait()
+
+        left = Line((-4, 0, 0), (-4, 2, 0), color=YELLOW)
+        right = Line((4, 0, 0), (4, 2, 0), color=YELLOW)
+        left_arrow = Arrow((-0.65, 1.5, 0), (-4, 1.5, 0), stroke_color=YELLOW, buff=0)
+        right_arrow = Arrow((0.65, 1.5, 0), (4, 1.5, 0), stroke_color=YELLOW, buff=0)
+        u_tex = Tex(R"U", color=YELLOW).move_to((0, 1.5, 0))
+        self.remove(conduction_line)
+        self.add(left, right, left_arrow, right_arrow, u_tex, conduction_line)
+        self.play(*(Write(mob) for mob in [left, right, left_arrow, right_arrow, u_tex]))
+        self.wait()
+        electrons = Group(*(Electron((x, 0, 1)) for x in np.arange(-40, 10, 0.5)))
+        self.play(UpdateFromAlphaFunc(electrons, lambda mob, alpha: (
+            mob.set_opacity(alpha),
+            mob.shift((2*alpha/DEFAULT_FPS, 0, 0)),
+            None
+        )[-1]))
+        electrons.add_updater(lambda mob, dt: mob.shift((2*dt, 0, 0)))
+        self.wait(4)
+        e_arrow = FillArrow((1, 0, 0), (-1, 0, 0), buff=0).set_color(GREEN)
+        e_tex = Tex(R"E", color=GREEN).next_to(e_arrow, UP)
+        self.remove(electrons)
+        self.add(e_arrow, electrons)
+        self.play(Write(e_arrow), Write(e_tex))
+        self.wait(1.5)
+
+        force = Arrow((-0.2, 0, 0), (0.6, 0, 0), stroke_color=YELLOW, buff=0)
+        electrons.clear_updaters(False)
+        self.remove(electrons)
+        self.add(e_arrow, force, electrons)
+        self.play(camera_update(self, [], [], 0.2),
+                  UpdateFromAlphaFunc(electrons, lambda mob, alpha: mob.shift((2*(1-alpha)/DEFAULT_FPS, 0, 0))),
+                  Write(force), FadeOut(e_arrow), FadeOut(e_tex))
+        self.wait(2)
+        current = Arrow((0.4, 0.4, 0), (-0.4, 0.4, 0), stroke_color=BLUE, buff=0)
+        current_tex = Tex(R"I", color=BLUE).scale(0.25).next_to(current, UP, buff=0.04)
+        self.play(Write(current), Write(current_tex))
+        self.wait()
+
+        # Blackboard 分屏
+        if DEBUG:
+            self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT))  # 答题卡裁切线 (bushi
+
+        self.play(camera_update(self, [], [], 1, 0.2),
+                  UpdateFromAlphaFunc(electrons, lambda mob, alpha: mob.shift((2*alpha/DEFAULT_FPS, 0, 0))),
+                  *(FadeOut(mob) for mob in [force, current, current_tex]))
+        electrons.add_updater(lambda mob, dt: mob.shift((2*dt, 0, 0)))
+        self.wait()
+
+        b_arrows = [
+            FillArrow((-1.5, -0.35, 0.5+2**0.5/2), (-1.5, 0.35, 0.5+2**0.5/2),
+                      buff=0)
+            .rotate(PI/4*n, axis=LEFT, about_point=(-1.5, 0, 0)).set_color(BLUE) for n in range(8)
+        ]
+        self.play(*(FadeIn(b_arrow, time_span=(t_ * 0.1, t_ * 0.1 + 0.8))
+                    for b_arrow, t_ in zip(b_arrows, range(8))),
+                  Write(Tex(R"B", color=BLUE_D).next_to(b_arrows[1], LEFT)))
+        self.wait()
+        self.play(MoveAlongBezier(Charge((0, 0, 0), 1, 0.1, 0), [
+            coord(-1, -1/8), coord(1/2, -1/8), coord(1, -1)
+        ], time_span=(0, 0.7)), MoveAlongBezier(Charge((0, 0, 0), -1, 0.1, 0), [
+            coord(-1, -1/2), coord(1/2, -1/2), coord(1, 0)
+        ], time_span=(0.4, 1.1)), MoveAlongBezier(Charge((0, 0, 0), -1, 0.1, 0), [
+            coord(-1, -3/4), coord(1/2, -3/4), coord(1, -1/8)
+        ], time_span=(0.8, 1.5)), MoveAlongBezier(Charge((0, 0, 0), 1, 0.1, 0), [
+            coord(-1, -1/4), coord(1/2, -1/4), coord(1, -1)
+        ], time_span=(1.2, 1.9)))
+        self.wait()
+
+
+DEBUG = False
+
+
 class Blackboard(Scene):
     """tested with commit 259640f5 in osMrPigHead/manimgl"""
+    SPLIT = 1
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.coulombs_law_title = Text("库仑定律:", font_size=36).to_edge(UL, buff=0.5)
+        self.coulombs_law_title = (Text("库仑定律:", font_size=36)
+                                   .to_edge(UL, buff=0.5))
         self.coulombs_law = Tex(
             R"\vec{F} = {1 \over 4 \pi \varepsilon_0} {q_0 q \over r^2} \vec{e}_{r}"
         ).scale(0.75).next_to(self.coulombs_law_title, RIGHT, aligned_edge=LEFT, buff=1)
@@ -521,8 +604,23 @@ class Blackboard(Scene):
             R"\small V\;(伏特)", color=YELLOW
         ).scale(0.75).next_to(self.phi, DOWN, aligned_edge=UP, buff=0.6)
 
+        self.i_title = (Text("传导电流:", font_size=36)
+                        .next_to(self.phi_title, DOWN, aligned_edge=UL, buff=0.8))
+        self.i = Tex(
+            R"I = {\Delta q \over \Delta t}"
+        ).scale(0.75).next_to(self.i_title, RIGHT, aligned_edge=LEFT, buff=1)
+        self.i_unit_1 = TexText(
+            R"\small C/s\;(库每秒)", color=YELLOW
+        ).scale(0.75).next_to(self.i, DOWN, aligned_edge=UP, buff=0.6)
+        self.i_unit_2 = TexText(
+            R"\small A\;(安培)", color=YELLOW
+        ).scale(0.75).next_to(self.i, DOWN, aligned_edge=UP, buff=0.6)
+
     def construct(self) -> None:
-        self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT).to_edge(LEFT, buff=0))  # 答题卡裁切线 (bushi
+        if DEBUG and self.SPLIT:
+            match self.SPLIT:  # 答题卡裁切线 (bushi
+                case 1: self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT).to_edge(LEFT, buff=0))
+                case 2: self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT).to_edge(RIGHT, buff=0))
         # self.e_field()
         # self.potential()
         self.conduction_current()
@@ -574,5 +672,16 @@ class Blackboard(Scene):
         self.wait()
 
     def conduction_current(self) -> None:
-        # TODO N/C -> V/m 改稿子
-        pass
+        self.add(self.coulombs_law_title, self.coulombs_law,
+                 self.e_field_intensity_title, self.e_field_intensity, self.e_field_intensity_unit_1, self.f_qe,
+                 self.phi_title, self.phi)
+        self.wait()
+        self.play(Transform(self.e_field_intensity_unit_1, self.e_field_intensity_unit_2))
+        self.wait()
+        self.play(Write(self.i_title))
+        self.play(Write(self.i))
+        self.wait()
+        self.play(Write(self.i_unit_1))
+        self.wait()
+        self.play(Transform(self.i_unit_1, self.i_unit_2))
+        self.wait()

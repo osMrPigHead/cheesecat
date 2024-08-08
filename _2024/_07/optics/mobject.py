@@ -1,14 +1,15 @@
 __all__ = [
     "ElectronmagneticPair", "ElectronmagneticPairUpdater",
     "ElectronmagneticField", "ElectronmagneticFieldUpdater",
-    "Ball", "Charge", "AxesCharge"
+    "Ball", "Charge", "AxesCharge", "Electron"
 ]
 
 from typing import Callable, Self, Sequence
 
-import numpy as np
+from noise import pnoise1
 
 from customs.constants import *
+from customs.utils import *
 from customs.wrappers import *
 from manimlib import *
 
@@ -335,3 +336,29 @@ class AxesCharge(Charge):
         if norm := get_norm(self.coords - x):
             return self.kq / norm
         return np.inf
+
+
+class Electron(Ball):
+    def __init__(
+            self,
+            pos: tuple[float, float, float] | np.ndarray,
+            radius: float = 0.1,
+            three_d: bool = True,
+            **kwargs
+    ):
+        super().__init__(pos, radius, three_d, GREEN_D, **kwargs)
+        self.seed_x = random.randint(0, 256)
+        self.speed_x = randbetween(1, 4)
+        self.time_x = 0
+        self.seed_y = random.randint(0, 256)
+        self.speed_y = randbetween(1, 4)
+        self.time_y = 0
+        self.add_updater(Electron.updater)
+
+    def updater(self, dt: float):
+        self.shift((self.radius/2 * (pnoise1(self.time_x, base=self.seed_x) -
+                    pnoise1(self.time_x + self.speed_x*dt, base=self.seed_x)), 0, 0))
+        self.time_x += self.speed_x * dt
+        self.shift((0, self.radius/2 * (pnoise1(self.time_y, base=self.seed_y) -
+                    pnoise1(self.time_y + self.speed_y*dt, base=self.seed_y)), 0))
+        self.time_y += self.speed_y * dt

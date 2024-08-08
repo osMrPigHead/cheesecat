@@ -1,5 +1,6 @@
 __all__ = [
-    "npcross", "random", "fullrand", "included_angle", "row_nditer",
+    "npcross", "random", "fullrand", "randbetween",
+    "included_angle", "row_nditer",
     "fade_update_", "fade_update",
     "stroke_fade_update_", "stroke_fade_update",
     "camera_update_", "camera_update",
@@ -20,6 +21,11 @@ random = Random(time.time())
 def fullrand(x: float | complex = 1) -> float:
     """包含正负的随机数"""
     return (random.random() * 2 - 1) * x
+
+
+def randbetween(a: float | complex = -1, b: float | complex = 1) -> float:
+    """生成 [a, b] 内的随机数"""
+    return a + (b - a) * random.random()
 
 
 def included_angle(v1: np.ndarray, v2: np.ndarray) -> float:
@@ -67,7 +73,7 @@ def stroke_fade_update(mob: VMobject, dest_opacity: float, rate_func: Callable[[
 def camera_update_(src_state: Sequence[tuple[float, np.ndarray]],
                    dst_state: Sequence[float | tuple[float, np.ndarray] |
                                        tuple[float, np.ndarray, Callable[[float], float]]],
-                   scale: float = 1, rate_func: Callable[[float], float] = smooth) \
+                   dst_scale: float = 1, src_scale: float = 1, rate_func: Callable[[float], float] = smooth) \
         -> Callable[[CameraFrame, float], None]:
     _dst_state = []
     for state in dst_state:
@@ -83,16 +89,16 @@ def camera_update_(src_state: Sequence[tuple[float, np.ndarray]],
             mob.rotate(*s)
         for s in _dst_state:
             mob.rotate(s[2](alpha)*s[0], s[1])
-        mob.scale((scale - 1) * rate_func(alpha) + 1)
+        mob.scale((dst_scale - src_scale) * rate_func(alpha) + src_scale)
     return updater
 
 
 def camera_update(self: Scene, src_state: Sequence[tuple[float, np.ndarray]],
                   dst_state: Sequence[tuple[float, np.ndarray] |
                                       tuple[float, np.ndarray, Callable[[float], float]]],
-                  scale: float = 1, rate_func: Callable[[float], float] = smooth, **kwargs) \
+                  dst_scale: float = 1, src_scale: float = 1, rate_func: Callable[[float], float] = smooth, **kwargs) \
         -> UpdateFromAlphaFunc:
-    return UpdateFromAlphaFunc(self.camera.frame, camera_update_(src_state, dst_state, scale, rate_func),
+    return UpdateFromAlphaFunc(self.camera.frame, camera_update_(src_state, dst_state, dst_scale, src_scale, rate_func),
                                rate_func=linear, **kwargs)
 
 
