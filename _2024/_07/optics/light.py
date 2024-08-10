@@ -1,8 +1,4 @@
 """那一刻, 他 (Grant Sanderson) 变成了光"""
-from customs.coords import *
-from customs.wrappers import *
-from manimlib import *
-
 __all__ = [
     "SPEED", "WIDTH_RATE",
     "limited", "light_from_path", "transmit_", "transmit",
@@ -13,6 +9,10 @@ __all__ = [
     "series_of_light_flash_", "series_of_light_flash",
     "transmit_light_flash_", "transmit_light_flash",
 ]
+
+from customs.coords import *
+from customs.wrappers import *
+from manimlib import *
 
 SPEED = 1.7
 WIDTH_RATE = 0.1  # 决定光在动画中的“拖尾”长度  time_width = width_rate * speed / length

@@ -1,5 +1,6 @@
 """基础知识篇"""
 from _2024._07.optics.animation import *
+from _2024._07.optics.calculations import *
 from _2024._07.optics.mobject import *
 from _2024._07.optics.scenes import *
 from customs.constants import *
@@ -558,6 +559,139 @@ class ConductionCurrent(Scene):
         ], time_span=(0.8, 1.5)), MoveAlongBezier(Charge((0, 0, 0), 1, 0.1, 0), [
             coord(-1, -1/4), coord(1/2, -1/4), coord(1, -1)
         ], time_span=(1.2, 1.9)))
+        self.wait()
+
+
+class MovingChargeAsCurrent(Scene):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        def updater(mob: Charge, dt: float):
+            nonlocal updater_time
+            mob.shift((0, (math.sin(updater_time) -
+                           math.sin(updater_time := updater_time + dt))/4, 0))
+        animate_time = 1
+        updater_time = animate_time
+        q = Charge((-FRAME_X_RADIUS, 0, 0), 1, 0.6, 96).add_updater(updater)
+        velocity = (Arrow(LEFT, RIGHT, stroke_color=BLUE)
+                    .add_updater(lambda mob: mob.put_start_and_end_on(q.pos, q.pos + (2, 0, 0))))
+        v_tex = (Tex(R"v", color=BLUE)
+                 .add_updater(lambda mob: mob.next_to(velocity, UP)))
+        current = Arrow((-1, 1.5, 0), (1, 1.5, 0), stroke_color=YELLOW)
+        i_tex = Tex(R"I", color=YELLOW).next_to(current, UP)
+        asl = AnimatedStreamLines(StreamLines(lambda x, y: (x-2, 0) if x <= 2 and -2 <= y <= 2
+                                              else (0, 0), Axes()))
+        self.add(asl, velocity, v_tex, q)
+        self.play(UpdateFromAlphaFunc(
+            q, lambda mob, alpha: (mob.move_to((
+                (smooth(alpha)-1)*FRAME_X_RADIUS,
+                -math.sin(alpha*animate_time)/4,
+                0
+            )), mob.set_opacity(smooth(alpha)), None)[-1],
+            run_time=animate_time, rate_func=linear, suspend_mobject_updating=True),
+                  FadeIn(velocity, suspend_mobject_updating=False),
+                  FadeIn(v_tex, suspend_mobject_updating=False))
+        self.wait(2)
+        self.play(Write(current), Write(i_tex))
+        self.wait(2)
+        self.play(UpdateFromAlphaFunc(
+            q, lambda mob, alpha: (mob.move_to((
+                smooth(alpha)*FRAME_X_RADIUS,
+                -math.sin(updater_time+alpha*animate_time)/4,
+                0
+            )), mob.set_opacity(1-smooth(alpha)), None)[-1],
+            run_time=animate_time, rate_func=linear, suspend_mobject_updating=True),
+                  fade_update(asl, 0, src_opacity=1),
+                  FadeOut(i_tex), FadeOut(current),
+                  FadeOut(velocity, suspend_mobject_updating=False),
+                  FadeOut(v_tex, suspend_mobject_updating=False))
+
+
+class InductionLines(Scene):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        def fb(x, y):
+            return bar_magnet_b(20, 1, 1, 4, x, y)
+
+        axes = Axes()
+        asl = AnimatedStreamLines(StreamLines(fb, axes))
+        magnet_n = (Rectangle(2, 1)
+                    .next_to((0, 0, 0), RIGHT, aligned_edge=LEFT, buff=0)
+                    .set_fill(RED, 1)
+                    .set_stroke(RED, 0))
+        n_text = Text("N", color=RED_E).move_to((1.6, 0, 0))
+        magnet_s = (Rectangle(2, 1)
+                    .next_to((0, 0, 0), LEFT, aligned_edge=RIGHT, buff=0)
+                    .set_fill(BLUE_D, 1)
+                    .set_stroke(BLUE_D, 0))
+        s_text = Text("S", color=BLUE_E).move_to((-1.6, 0, 0))
+        self.add(asl, magnet_n, magnet_s, n_text, s_text)
+        self.play(*(FadeIn(mob) for mob in [magnet_n, n_text, magnet_s, s_text]))
+        self.wait(2)
+        start = axes.c2p(3/2, 1)
+        b = axes.c2p(*fb(3/2, 1)) / 2
+        gradient = color_gradient([RED, BLUE], 32)
+        b_arrow = (Arrow(start, start + b)
+                   .set_color_by_rgb_func(
+                       lambda p: gradient[int(get_norm(p - start) / get_norm(b) * 32)].get_rgb()
+                   ))
+        self.play(Write(b_arrow))
+        arrow_n_text = (Text("N", font_size=32, color=RED)
+                        .next_to(b_arrow, UR, buff=0.1)
+                        .shift((0, -b[1], 0)))
+        arrow_s_text = (Text("S", font_size=32, color=BLUE)
+                        .next_to(b_arrow, UL, buff=0.1))
+        self.play(Write(arrow_n_text))
+        self.play(Write(arrow_s_text))
+        self.wait()
+        self.play(ShowCreationThenFadeOut(Rectangle(1.5, 1, color=YELLOW)
+                                          .move_to((-1.5, 1.25, 0))))
+        self.play(ShowCreationThenFadeOut(Rectangle(1.5, 4, color=YELLOW)
+                                          .move_to((-5, 0, 0))))
+        self.wait()
+        field = VectorField(fb, axes).set_opacity(0.6)
+        title = (Text("磁感应强度", font_size=56)
+                 .to_edge(UP))
+        b_tex = Tex(R"B", color=BLUE).move_to((0, -3, 0))
+        self.remove(magnet_n, n_text, magnet_s, s_text,
+                    b_arrow, arrow_n_text, arrow_s_text)
+        self.add(field, magnet_n, n_text, magnet_s, s_text,
+                 b_arrow, arrow_n_text, arrow_s_text)
+        self.play(Transform(asl, field), ShowCreation(field),
+                  FadeIn(BackgroundRectangle(title), time_span=(1, 2)),
+                  Write(title, time_span=(1, 2)),
+                  FadeIn(BackgroundRectangle(b_tex), time_span=(1, 2)),
+                  Write(b_tex, time_span=(1, 2)),
+                  run_time=2)
+        self.wait()
+        b_unit = (TexText(R"T\;(特斯拉)", font_size=36, color=YELLOW)
+                  .next_to(b_tex, UR, buff=0.1))
+        self.play(FadeIn(BackgroundRectangle(b_unit)), Write(b_unit))
+        self.wait()
+
+
+class UniformMagnetField(Scene):
+    """tested with commit 259640f5 in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        magnet_n = (Rectangle(2, FRAME_HEIGHT)
+                    .set_fill(RED, 1)
+                    .set_stroke(RED, 0))
+        magnet_n.add(Text("N", font_size=64, color=RED_E))
+        magnet_n.to_edge(LEFT, buff=0)
+        magnet_s = (Rectangle(2, FRAME_HEIGHT)
+                    .set_fill(BLUE_D, 1)
+                    .set_stroke(BLUE_D, 0))
+        magnet_s.add(Text("S", font_size=64, color=BLUE_E))
+        magnet_s.to_edge(RIGHT, buff=0)
+        axes = Axes()
+        field = VectorField(lambda x, y: (0, 0), axes)
+        self.add(field, magnet_n, magnet_s,
+                 AnimatedStreamLines(StreamLines(lambda x, y: (1.5, 0.), axes)))
+        self.wait()
+        title = (Text("匀强磁场", font_size=56)
+                 .to_edge(UP))
+        self.play(field.animate.become(VectorField(lambda x, y: (1., 0.), axes)),
+                  FadeIn(BackgroundRectangle(title)),
+                  Write(title))
         self.wait()
 
 

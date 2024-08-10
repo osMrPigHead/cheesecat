@@ -105,6 +105,8 @@ def camera_update(self: Scene, src_state: Sequence[tuple[float, np.ndarray]],
 def color_by_z(reference_colors: Iterable[str | Color],
                min_z: float, max_z: float,
                num: int = 32) -> Callable[[np.ndarray], np.ndarray]:
-    return lambda p: color_gradient(
+    gradient = color_gradient(
         reference_colors, num
-    )[int((clip(p[2], min_z, max_z) - min_z) * num / (max_z - min_z + 1))].get_rgb()
+    )
+    return lambda p: (gradient[int((clip(p[2], min_z, max_z) - min_z) * num / (max_z - min_z + 1))]
+                      .get_rgb())

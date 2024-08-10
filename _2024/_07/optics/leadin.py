@@ -229,7 +229,8 @@ class Toc(TocParent):
         # 2.5-5s
         self.play(XZBroadcast((0, 0, -0.15), big_radius=4.2, color=YELLOW, run_time=2.5),
                   XZBroadcast((0, 0, 0.15), big_radius=4.2, color=YELLOW))
-        image = ImageMobject("screen.png", height=0.4).move_to((4, 0, 0)).rotate(PI/2, UP)
+        image = (ImageMobject("optics/screen.png", height=0.4)
+                 .move_to((4, 0, 0)).rotate(PI/2, UP))
         # 5-6s
         self.play(FadeIn(image))
         # 6-7s
