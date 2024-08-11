@@ -4,12 +4,14 @@ __all__ = [
     "fade_update_", "fade_update",
     "stroke_fade_update_", "stroke_fade_update",
     "camera_update_", "camera_update",
-    "color_by_z"
+    "color_by_z", "cubic_bezier"
 ]
 
+import functools
 from random import Random
 from typing import Callable, Iterable, Sequence
 
+from customs.wrappers import *
 from manimlib import *
 
 # PyCharm 用 np.cross 有一些奇奇怪怪的错误提示
@@ -110,3 +112,9 @@ def color_by_z(reference_colors: Iterable[str | Color],
     )
     return lambda p: (gradient[int((clip(p[2], min_z, max_z) - min_z) * num / (max_z - min_z + 1))]
                       .get_rgb())
+
+
+@functools.wraps(CubicBezier)
+@ensure_type(np.ndarray, 0, 1, 2, 3, "p0", "p1", "p2", "p3", builder=np.array)
+def cubic_bezier(p0, p1, p2, p3, **kwargs):
+    return CubicBezier(p0, p1, p2, p3, **kwargs)

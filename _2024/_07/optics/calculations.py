@@ -1,7 +1,7 @@
 """一些计算
 别问我结果怎么来的 问就是 Mathematica 帮我算的"""
 __all__ = [
-    "bar_magnet_b"
+    "bar_magnet_b", "u_bar_magnet_b"
 ]
 
 import cmath
@@ -27,3 +27,7 @@ def bar_magnet_b(i: float, wz: float, wy: float, wx: float,
         return fbx(x_+wx/2, y_) - fbx(x_-wx/2, y_), fby(x_+wx/2, y_) - fby(x_-wx/2, y_)
     except ValueError:
         return 0, 0
+
+
+def u_bar_magnet_b(x: float, y: float) -> tuple[float, float]:
+    return bar_magnet_b(20, 1, 1, 4, x, y)

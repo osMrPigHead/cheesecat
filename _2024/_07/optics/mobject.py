@@ -1,7 +1,8 @@
 __all__ = [
     "ElectronmagneticPair", "ElectronmagneticPairUpdater",
     "ElectronmagneticField", "ElectronmagneticFieldUpdater",
-    "Ball", "Charge", "AxesCharge", "Electron"
+    "Ball", "Charge", "AxesCharge", "Electron",
+    "BarMagnet"
 ]
 
 from typing import Callable, Self, Sequence
@@ -362,3 +363,19 @@ class Electron(Ball):
         self.shift((0, self.radius/2 * (pnoise1(self.time_y, base=self.seed_y) -
                     pnoise1(self.time_y + self.speed_y*dt, base=self.seed_y)), 0))
         self.time_y += self.speed_y * dt
+
+
+class BarMagnet(VGroup):
+    def __init__(self):
+        super().__init__(
+            Rectangle(2, 1)
+            .next_to((0, 0, 0), RIGHT, aligned_edge=LEFT, buff=0)
+            .set_fill(RED, 1)
+            .set_stroke(RED, 0),
+            Text("N", color=RED_E).move_to((1.6, 0, 0)),
+            Rectangle(2, 1)
+            .next_to((0, 0, 0), LEFT, aligned_edge=RIGHT, buff=0)
+            .set_fill(BLUE_D, 1)
+            .set_stroke(BLUE_D, 0),
+            Text("S", color=BLUE_E).move_to((-1.6, 0, 0))
+        )

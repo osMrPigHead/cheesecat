@@ -5,7 +5,7 @@ from _2024._07.optics.mobject import *
 from _2024._07.optics.scenes import *
 from customs.constants import *
 from customs.coords import *
-from customs.scenes import opening_quote
+from customs.scenes import big_question_mark, opening_quote
 from customs.utils import *
 from manimlib import *
 
@@ -609,26 +609,14 @@ class MovingChargeAsCurrent(Scene):
 class InductionLines(Scene):
     """tested with commit 656f98fd in osMrPigHead/manimgl"""
     def construct(self) -> None:
-        def fb(x, y):
-            return bar_magnet_b(20, 1, 1, 4, x, y)
-
         axes = Axes()
-        asl = AnimatedStreamLines(StreamLines(fb, axes))
-        magnet_n = (Rectangle(2, 1)
-                    .next_to((0, 0, 0), RIGHT, aligned_edge=LEFT, buff=0)
-                    .set_fill(RED, 1)
-                    .set_stroke(RED, 0))
-        n_text = Text("N", color=RED_E).move_to((1.6, 0, 0))
-        magnet_s = (Rectangle(2, 1)
-                    .next_to((0, 0, 0), LEFT, aligned_edge=RIGHT, buff=0)
-                    .set_fill(BLUE_D, 1)
-                    .set_stroke(BLUE_D, 0))
-        s_text = Text("S", color=BLUE_E).move_to((-1.6, 0, 0))
-        self.add(asl, magnet_n, magnet_s, n_text, s_text)
-        self.play(*(FadeIn(mob) for mob in [magnet_n, n_text, magnet_s, s_text]))
+        asl = AnimatedStreamLines(StreamLines(u_bar_magnet_b, axes))
+        bar_magnet = BarMagnet()
+        self.add(asl, bar_magnet)
+        self.play(FadeIn(bar_magnet))
         self.wait(2)
         start = axes.c2p(3/2, 1)
-        b = axes.c2p(*fb(3/2, 1)) / 2
+        b = axes.c2p(*u_bar_magnet_b(3/2, 1)) / 2
         gradient = color_gradient([RED, BLUE], 32)
         b_arrow = (Arrow(start, start + b)
                    .set_color_by_rgb_func(
@@ -643,19 +631,21 @@ class InductionLines(Scene):
         self.play(Write(arrow_n_text))
         self.play(Write(arrow_s_text))
         self.wait()
-        self.play(ShowCreationThenFadeOut(Rectangle(1.5, 1, color=YELLOW)
-                                          .move_to((-1.5, 1.25, 0))))
-        self.play(ShowCreationThenFadeOut(Rectangle(1.5, 4, color=YELLOW)
-                                          .move_to((-5, 0, 0))))
+        rect = (Rectangle(1.5, 1, color=YELLOW)
+                .move_to((-1.5, 1.25, 0)))
+        self.play(ShowCreation(rect))
         self.wait()
-        field = VectorField(fb, axes).set_opacity(0.6)
+        self.play(Transform(rect, Rectangle(1.5, 4, color=YELLOW)
+                            .move_to((-5, 0, 0))))
+        self.wait()
+        self.play(FadeOut(rect))
+        self.wait()
+        field = VectorField(u_bar_magnet_b, axes).set_opacity(0.6)
         title = (Text("磁感应强度", font_size=56)
                  .to_edge(UP))
-        b_tex = Tex(R"B", color=BLUE).move_to((0, -3, 0))
-        self.remove(magnet_n, n_text, magnet_s, s_text,
-                    b_arrow, arrow_n_text, arrow_s_text)
-        self.add(field, magnet_n, n_text, magnet_s, s_text,
-                 b_arrow, arrow_n_text, arrow_s_text)
+        b_tex = Tex(R"\vec{B}", color=BLUE).move_to((0, -3, 0))
+        self.remove(bar_magnet, b_arrow, arrow_n_text, arrow_s_text)
+        self.add(field, bar_magnet, b_arrow, arrow_n_text, arrow_s_text)
         self.play(Transform(asl, field), ShowCreation(field),
                   FadeIn(BackgroundRectangle(title), time_span=(1, 2)),
                   Write(title, time_span=(1, 2)),
@@ -692,6 +682,146 @@ class UniformMagnetField(Scene):
         self.play(field.animate.become(VectorField(lambda x, y: (1., 0.), axes)),
                   FadeIn(BackgroundRectangle(title)),
                   Write(title))
+        self.wait()
+
+
+class BarMagnetField(Scene):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        axes = Axes()
+        bar_magnet = BarMagnet()
+        field = VectorField(lambda x, y: (0, 0), axes)
+        self.add(field, bar_magnet)
+        self.wait()
+        self.play(field.animate.become(VectorField(u_bar_magnet_b, axes)))
+        self.wait()
+
+
+class BarMagnetForce(Scene):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        d = 11/4
+        m1 = BarMagnet().scale(0.6).next_to((-d, 0, 0), LEFT, buff=0)
+        m2 = BarMagnet().scale(0.6).next_to((d, 0, 0), RIGHT, buff=0)
+        self.add(m1, m2)
+        self.play(UpdateFromAlphaFunc(
+            m1,
+            lambda mob, alpha: mob.next_to((-d+d*rush_into(alpha), 0, 0), LEFT, buff=0)
+        ), UpdateFromAlphaFunc(
+            m2,
+            lambda mob, alpha: mob.next_to((d-d*rush_into(alpha), 0, 0), RIGHT, buff=0)
+        ))
+        self.wait()
+        force_arrow = Arrow((0, 0, 0), (7/4, 0, 0), stroke_color=YELLOW, buff=0)
+        force_tex = Tex(R"F", color=YELLOW).next_to(force_arrow, UP)
+        self.play(m2.animate.set_opacity(0.6),
+                  FadeIn(force_arrow), FadeIn(force_tex))
+        self.wait()
+        self.play(ShowCreationThenFadeOut(Rectangle(1, 1.5, color=YELLOW)
+                                          .move_to(m1)))
+        self.wait()
+        cbu = cubic_bezier(
+            (2/3, 0, 0), (2/9, 1/3, 0), (-2/9, 1/3, 0), (-2/3, 0, 0)
+        ).shift(m1.get_top()).set_stroke(BLUE)
+        cbd = cubic_bezier(
+            (2/3, 0, 0), (2/9, -1/3, 0), (-2/9, -1/3, 0), (-2/3, 0, 0)
+        ).shift(m1.get_bottom()).set_stroke(BLUE)
+        self.play(ShowCreation(cbu), ShowCreation(cbd), run_time=0.6)
+        self.wait()
+
+
+class UniformWorksForElectric(Scene):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        r = 3
+        q = TrueDot(color=RED, radius=r+1/4).make_3d()
+        pppppp114514 = VGroup(*(Text("+", font_size=20, color=BLACK)
+                                .move_to((r*math.cos(t), r*math.sin(t), 0))
+                                for t in np.arange(0, 2*PI, PI/16)))
+        self.add(q, pppppp114514)
+
+
+class ButNotForMagnet(Scene):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        r = 3
+        m = TrueDot(color=BLUE_D, radius=r+1/4).make_3d()
+        n_text = Text("S", font_size=192, color=BLUE_E)
+        self.add(m, n_text)
+
+
+class BigQuestionMark(big_question_mark.BigQuestionMark):
+    """tested with commit 259640f5 in osMrPigHead/manimgl"""
+    pass
+
+
+class LorentzForce(Scene):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        def updater(mob: Charge, dt: float):
+            nonlocal updater_time
+            mob.shift((0, (math.sin(updater_time) -
+                           math.sin(updater_time := updater_time + dt))/4, 0))
+        animate_time = 1
+        updater_time = animate_time
+        q = Charge((-FRAME_X_RADIUS, 0, 0), 1, 0.6, 96).add_updater(updater)
+        velocity = (Arrow(LEFT, RIGHT, stroke_color=BLUE)
+                    .add_updater(lambda mob: mob.put_start_and_end_on(q.pos, q.pos + (2, 0, 0))))
+        v_tex = (Tex(R"v", color=BLUE)
+                 .add_updater(lambda mob: mob.next_to(velocity, UP)))
+        asl = AnimatedStreamLines(StreamLines(lambda x, y: (x-2, 0) if x <= 2 and -2 <= y <= 2
+                                              else (0, 0), Axes()))
+        xxxxxx114514 = (VGroup(*(Text("+", font_size=20, color=BLUE_D)
+                                 .rotate(PI/4)
+                                 .move_to((x, y + 0.5, 0))
+                                 for x in range(-8, 40) for y in range(-5, 5)))
+                        .add_updater(lambda mob, dt: mob.shift((-dt/2, 0, 0)))
+                        .set_opacity(0))
+        self.add(asl, xxxxxx114514, velocity, v_tex, q)
+        self.play(UpdateFromAlphaFunc(
+            q, lambda mob, alpha: (mob.move_to((
+                (smooth(alpha)-1)*FRAME_X_RADIUS,
+                -math.sin(alpha*animate_time)/4,
+                0
+            )), mob.set_opacity(smooth(alpha)), None)[-1],
+            run_time=animate_time, rate_func=linear, suspend_mobject_updating=True),
+                  FadeIn(velocity, suspend_mobject_updating=False),
+                  FadeIn(v_tex, suspend_mobject_updating=False))
+        self.wait()
+        velocity.clear_updaters()
+        self.play(q.animate.scale(0.5), xxxxxx114514.animate.set_opacity(1),
+                  UpdateFromAlphaFunc(velocity, lambda mob, alpha:
+                  mob.put_start_and_end_on(q.pos, q.pos + (2 - alpha, 0, 0))))
+        velocity.add_updater(lambda mob: mob.put_start_and_end_on(q.pos, q.pos + (1, 0, 0)))
+        self.wait()
+        force_arrow = (Arrow(LEFT, RIGHT, stroke_color=YELLOW)
+                       .add_updater(lambda mob: mob.put_start_and_end_on(
+                           q.get_center(), q.get_center() + (0, 1.5, 0)
+                       )))
+        force_tex = (Tex(R"F", color=YELLOW)
+                     .add_updater(lambda mob: mob.next_to(force_arrow, LEFT)))
+        self.remove(q)
+        self.add(force_arrow, force_tex, q)
+        self.play(Write(force_arrow), Write(force_tex))
+        self.wait()
+        self.play(FocusOn(q, suspend_mobject_updating=False))
+        self.wait()
+        self.play(Indicate(velocity, suspend_mobject_updating=False),
+                  Indicate(v_tex, suspend_mobject_updating=False))
+        self.wait()
+
+
+class LorentzForceFormula(Scene):
+    """tested with commit 259640f5 in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        title = (Text("洛伦兹力", font_size=56)
+                 .to_edge(UP))
+        lorentz_force = Tex(
+            R"\vec{F} = q \vec{v} \times \vec{B}"
+        ).to_edge(DOWN, buff=1)
+        lorentz_force_back = SurroundingRectangle(lorentz_force).set_fill(YELLOW, 0.2)
+        self.play(FadeIn(BackgroundRectangle(title)), Write(title),
+                  ShowCreation(lorentz_force_back), Write(lorentz_force))
         self.wait()
 
 
