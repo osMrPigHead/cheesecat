@@ -4,7 +4,8 @@ __all__ = [
     "fade_update_", "fade_update",
     "stroke_fade_update_", "stroke_fade_update",
     "camera_update_", "camera_update",
-    "color_by_z", "cubic_bezier"
+    "color_by_z",
+    "cubic_bezier", "rect_from_to"
 ]
 
 import functools
@@ -118,3 +119,12 @@ def color_by_z(reference_colors: Iterable[str | Color],
 @ensure_type(np.ndarray, 0, 1, 2, 3, "p0", "p1", "p2", "p3", builder=np.array)
 def cubic_bezier(p0, p1, p2, p3, **kwargs):
     return CubicBezier(p0, p1, p2, p3, **kwargs)
+
+
+@functools.wraps(Rectangle)
+def rect_from_to(a: tuple[float, float], b: tuple[float, float], **kwargs) -> Rectangle:
+    # 2D only
+    a, b = np.array((*a, 0)), np.array((*b, 0))
+    o = (a + b) / 2
+    d = abs(a - b)
+    return Rectangle(d[0], d[1], **kwargs).move_to(o)

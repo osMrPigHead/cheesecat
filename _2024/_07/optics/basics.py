@@ -823,6 +823,67 @@ class LorentzForceFormula(Scene):
         self.play(FadeIn(BackgroundRectangle(title)), Write(title),
                   ShowCreation(lorentz_force_back), Write(lorentz_force))
         self.wait()
+        lorentz_force_back_ = (SurroundingRectangle(lorentz_force.generate_target()
+                                                    .scale(1.5).move_to((0, 0, 0)))
+                               .set_fill(YELLOW, 0.2)
+                               .set_opacity(0))
+        self.play(MoveToTarget(lorentz_force),
+                  Transform(lorentz_force_back, lorentz_force_back_))
+        self.wait()
+        focus = SurroundingRectangle(lorentz_force[R"q \vec{v}"])
+        self.play(ShowCreation(focus))
+        self.wait()
+        focus_ = SurroundingRectangle(lorentz_force[R"\vec{B}"])
+        self.play(Transform(focus, focus_))
+        self.wait()
+        b_unit = Tex(
+            R"N = C \cdot ( m / s ) \cdot T", color=YELLOW
+        ).next_to(lorentz_force, DOWN, buff=0.6)
+        self.play(Write(b_unit))
+        self.wait()
+        b_unit_ = Tex(
+            R"T = N \cdot s / ( C \cdot m )", color=YELLOW
+        ).next_to(lorentz_force, DOWN, buff=0.6)
+        self.play(TransformMatchingTex(b_unit, b_unit_, key_map={
+            "N": "N",
+            "C": "C",
+            "m": "m",
+            "s": "s",
+            "T": "T"
+        }, path_arc=True))
+        self.wait()
+        focus_ = SurroundingRectangle(lorentz_force[R"\times"])
+        self.play(Transform(focus, focus_))
+        self.wait()
+        cross_image = (ImageMobject("optics/cross.png", 4)
+                       .next_to(lorentz_force, LEFT))
+        self.play(FadeIn(cross_image))
+        self.wait()
+        # self.add(MotionMobject(Dot().set_color(MAROON))
+        #          .add_updater(lambda mob: print(mob.get_center())))
+        # 食指: [-5.55 0.04] -- [-3.94 -0.54]
+        # 中指: [-5.22 -1.22] -- [-4.27 -0.61]
+        # 大拇指: [-3.86 0.87] -- [-3.23 -0.17]
+        rect = rect_from_to((-5.55, 0.04), (-3.94, -0.54), color=YELLOW)
+        self.play(ShowCreation(rect))
+        self.wait()
+        self.play(Transform(rect, rect_from_to((-5.22, -1.22), (-4.27, -0.61),
+                                               color=YELLOW)))
+        self.wait()
+        self.play(Transform(rect, rect_from_to((-3.86, 0.87), (-3.23, -0.17),
+                                               color=YELLOW)))
+        self.wait()
+        self.play(FadeOut(rect))
+        self.wait()
+        cross_image.add_updater(lambda mob, dt: mob.rotate(4*PI*dt))
+        self.wait()
+        cross_image.clear_updaters()
+        self.wait()
+        lorentz_force_abs = Tex(
+            R"|\vec{F}| = q |\vec{v}||\vec{B}| \sin\theta"
+        ).next_to(b_unit, DOWN, buff=0.6)
+        self.play(Write(lorentz_force_abs))
+        self.wait()
 
 
 DEBUG = False
