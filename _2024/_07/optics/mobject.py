@@ -27,6 +27,7 @@ class ElectronmagneticPair(VGroup):
             b_color: str | Color = BLUE_D,
             opacity: float = 1,
             vector_config: dict = None,
+            builder: Callable[..., VMobject] = Arrow,
             **kwargs
     ):
         super().__init__(**kwargs)
@@ -45,12 +46,10 @@ class ElectronmagneticPair(VGroup):
         self._e_vect = coordinate_system.c2p(*(coords + e_value))
         self._b_vect = coordinate_system.c2p(*(coords + b_value))
 
-        self.e_mob = Arrow(self._start, self._e_vect,
-                           stroke_color=e_color, stroke_opacity=opacity, buff=0,
-                           **vector_config)
-        self.b_mob = Arrow(self._start, self._b_vect,
-                           stroke_color=b_color, stroke_opacity=opacity, buff=0,
-                           **vector_config)
+        self.e_mob = builder(self._start, self._e_vect, buff=0,
+                             **vector_config).set_color(e_color).set_opacity(opacity)
+        self.b_mob = builder(self._start, self._b_vect, buff=0,
+                             **vector_config).set_color(b_color).set_opacity(opacity)
         self.add(self.e_mob, self.b_mob)
 
     @ensure_type(np.ndarray, 1, "coords", builder=np.array)
@@ -99,6 +98,7 @@ class ElectronmagneticPairUpdater(ElectronmagneticPair):
             b_color: str | Color = BLUE_D,
             opacity: float = 1,
             vector_config: dict = None,
+            builder: Callable[..., VMobject] = Arrow,
             **kwargs
     ):
         super().__init__(
@@ -110,6 +110,7 @@ class ElectronmagneticPairUpdater(ElectronmagneticPair):
             b_color,
             opacity,
             vector_config,
+            builder,
             **kwargs
         )
         self.time = 0
@@ -152,6 +153,7 @@ class ElectronmagneticField(VGroup):
             b_color: str | Color = BLUE_D,
             opacity: float = 1,
             vector_config: dict = None,
+            builder: Callable[..., VMobject] = Arrow,
             **kwargs
     ):
         super().__init__(**kwargs)
@@ -165,6 +167,7 @@ class ElectronmagneticField(VGroup):
         self.b_color = b_color
         self.opacity = opacity
         self.vector_config = vector_config
+        self.builder = builder
 
         self._mobs = self.get_mobs()
         self.add(*self._mobs.values())
@@ -183,7 +186,8 @@ class ElectronmagneticField(VGroup):
                 self.e_color,
                 self.b_color,
                 self.opacity,
-                self.vector_config
+                self.vector_config,
+                self.builder
             )
         return mobs
 
@@ -215,6 +219,7 @@ class ElectronmagneticFieldUpdater(ElectronmagneticField):
             b_color: str | Color = BLUE_D,
             opacity: float = 1,
             vector_config: dict = None,
+            builder: Callable[..., VMobject] = Arrow,
             **kwargs
     ):
         super().__init__(
@@ -226,6 +231,7 @@ class ElectronmagneticFieldUpdater(ElectronmagneticField):
             b_color,
             opacity,
             vector_config,
+            builder,
             **kwargs
         )
         self.time = 0

@@ -886,6 +886,100 @@ class LorentzForceFormula(Scene):
         self.wait()
 
 
+PRACTICE_WAIT_TIME = 12
+
+
+class LorentzForcePraticeParent(Scene):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    b = (0, 1.5, 0)
+    v = (1, 0, 0)
+    floating = (0, 1, 0)
+    kq = 1
+    x_range = (-12, 36, 1)
+    y_range = (-2, 2, 1)
+    z_range = (-6, 6, 1)
+
+    def construct(self) -> None:
+        def updater(mob: Charge, dt: float):
+            nonlocal updater_time
+            mob.shift((math.sin(updater_time) -
+                       math.sin(updater_time := updater_time + dt))/4 * np.array(self.floating))
+
+        def f(r: tuple[float, float, float]) -> float:
+            return r[1] - r[0]
+        updater_time = 0
+        self.camera_rotate()
+        axes = ThreeDAxes(self.x_range, self.y_range, self.z_range,
+                          width=f(self.x_range), height=f(self.y_range), depth=f(self.z_range))
+        axes.shift(-axes.c2p(0, 0, 0))
+        field = ElectronmagneticField(
+            lambda x, y, z: (0, 0, 0),
+            lambda x, y, z: self.b, axes,
+            step_multiple=2, opacity=0.6,
+            builder=lambda *args, **kwargs: self.arrow_rotate(FillArrow(*args, **kwargs))
+        ).add_updater(lambda mob, dt: mob.shift(-dt/2*np.array(self.v)))
+        q = Charge((0, 0, 0), self.kq).add_updater(updater)
+        velocity = (FillArrow(LEFT, RIGHT)
+                    .set_color(YELLOW)
+                    .add_updater(lambda mob: self.velocity_rotate(
+                        mob.put_start_and_end_on(q.pos, q.pos + self.v)
+                    )))
+        self.add(field, velocity, q)
+        self.wait(PRACTICE_WAIT_TIME)
+
+    def camera_rotate(self):
+        self.camera.frame.rotate(PI/4, LEFT)
+        self.camera.frame.rotate(PI/3, DOWN)
+
+    def arrow_rotate(self, arrow):
+        return arrow.rotate(PI/3, DOWN)
+
+    def velocity_rotate(self, velocity):
+        return velocity.rotate(PI/4, LEFT)
+
+
+class LorentzForcePratice1(LorentzForcePraticeParent):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    pass
+
+
+class LorentzForcePratice2(LorentzForcePraticeParent):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    b = (0, -1.5, 0)
+    v = (-1, 0, 0)
+    kq = -1
+    x_range = (-36, 12, 1)
+
+
+class LorentzForcePratice3(LorentzForcePraticeParent):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    b = (0, 0, 1.5)
+    v = (0, 1, 0)
+    floating = (0, 0, 1)
+    kq = -1
+    y_range = (-2, 36, 1)
+
+    def arrow_rotate(self, arrow):
+        return arrow.rotate(PI/2, OUT)
+
+    def velocity_rotate(self, velocity):
+        return velocity.rotate(PI/3, DOWN)
+
+
+class LorentzForcePratice4(LorentzForcePraticeParent):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    b = (-1.5, 0, 0)
+    v = (0, 0, -1)
+    floating = (0, 0, 1)
+    z_range = (-36, 6, 1)
+
+    def arrow_rotate(self, arrow):
+        return arrow.rotate(PI/4, LEFT)
+
+    def velocity_rotate(self, velocity):
+        return velocity.rotate(PI/2, OUT)
+
+
 DEBUG = False
 
 
