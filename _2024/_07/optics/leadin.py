@@ -170,8 +170,8 @@ class Toc(TocParent):
         self.play(*(FadeOut(mob) for mob in [q1, q2, force, force_tex, b_tex] + b_arrows))
 
     def p2demo(self) -> None:
-        self.camera.frame.rotate(PI / 12, axis=LEFT)
-        self.camera.frame.rotate(PI / 6, axis=DOWN)
+        self.camera.frame.rotate(PI/12, axis=LEFT)
+        self.camera.frame.rotate(PI/6, axis=DOWN)
         axes = ThreeDAxes((-4, 4, 1), (-3, 3, 1), (-3, 3, 1),
                           axis_config={"include_tip": True}, z_axis_config={"include_tip": True})
         axes.shift(-axes.get_origin())

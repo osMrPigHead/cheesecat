@@ -980,6 +980,48 @@ class LorentzForcePratice4(LorentzForcePraticeParent):
         return velocity.rotate(PI/2, OUT)
 
 
+class NoPotentialForMagnet(Scene):
+    """tested with commit 259640f5 in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        self.camera.frame.rotate(PI/12, axis=LEFT)
+        self.camera.frame.rotate(PI/6, axis=DOWN)
+        axes = ThreeDAxes((-4, 4, 1), (-3, 3, 1), (-3, 3, 1),
+                          axis_config={"include_tip": True}, z_axis_config={"include_tip": True})
+        axes.shift(-axes.get_origin())
+        self.add(axes)
+        self.wait()
+
+        b_vec = Vector(axes.c2p(-1, 0, 2)).set_color(BLUE_D)
+        b_tex = (Tex(R"\vec{B}", color=BLUE_D)
+                 .next_to(axes.c2p(-1, 0, 2), RIGHT)
+                 .rotate(PI/6, axis=DOWN))
+        v_vec = Vector(axes.c2p(-1, 0, 0)).set_color(RED)
+        v_tex = (Tex(R"\vec{v}", color=RED)
+                 .next_to(axes.c2p(-1, 0, 0), LEFT)
+                 .rotate(PI/6, axis=DOWN))
+        vb_vec = Vector(axes.c2p(0, 2, 0)).set_color(YELLOW)
+        vb_tex = (Tex(R"\vec{v} \times \vec{B}", color=YELLOW)
+                  .next_to(axes.c2p(0, 2, 0), RIGHT)
+                  .rotate(PI/6, axis=DOWN))
+        self.play(*(Write(mob) for mob in [b_vec, b_tex, v_vec, v_tex]))
+        self.wait()
+        self.play(Write(vb_vec), Write(vb_tex))
+        self.wait()
+        plane = NumberPlane((-4, 4, 1), (-3, 3, 1)).rotate(PI/2, LEFT)
+        self.play(Write(plane))
+        self.wait()
+
+        self.camera.frame.to_default_state()
+        title = (Text("磁势能 / 磁势", font_size=56)
+                 .to_edge(UP)
+                 .fix_in_frame())
+        self.camera.frame.rotate(PI/12, axis=LEFT)
+        self.camera.frame.rotate(PI/6, axis=DOWN)
+        self.play(Write(title))
+        self.play(ShowCreation(Cross(SurroundingRectangle(title))))
+        self.wait()
+
+
 DEBUG = False
 
 
