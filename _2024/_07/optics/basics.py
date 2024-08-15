@@ -1088,6 +1088,38 @@ class IntegralB(Scene):
         self.play(fade_update(line, 0.4, src_opacity=1),
                   Write(dl_tex))
         self.wait()
+        spheres = []
+        spheres += [Sphere(radius=1).set_color(BLUE_D).set_opacity(0.2).move_to(line_section)]
+        self.play(FadeIn(spheres[-1]), FadeOut(line_section), FadeOut(dl_tex))
+        for i in range(-10, 10):
+            spheres += [spheres[0].copy().shift((i*0.5, 0, 0))]
+        self.play(*(FadeIn(sphere, time_span=(i*0.1, i*0.1+0.5)) for i, sphere in enumerate(spheres[1:])))
+        self.wait()
+        cylinder = Cylinder(radius=1, height=30).rotate(PI/2, UP).set_color(BLUE_D)
+        self.play(fade_update(cylinder, 0.2),
+                  *(FadeOut(sphere) for sphere in spheres))
+        self.wait()
+        cylinder_section = (Cylinder(radius=1, height=2.5).rotate(PI/2, UP)
+                            .set_color(BLUE_D).set_opacity(0.8).move_to((4.5, 0, 0)))
+        l_tex = Tex(R"l").next_to(cylinder_section, DOWN)
+        self.play(FadeIn(cylinder_section), Write(l_tex))
+        self.wait()
+
+
+class SpreadToSphere(Scene):
+    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        q = Dot(radius=0.1).set_color(RED)
+        q_spread = Sphere()
+        self.add(q, q_spread, AnimatedStreamLines(StreamLines(
+            lambda x, y, z: np.array((x, y, z)) / get_norm((x, y, z))**3 * 3/4,
+            ThreeDAxes((-0.6, 0.6, 1), (-0.6, 0.6, 1), (-0.6, 0.6, 1),
+                       width=5, height=5, depth=5)
+        )))
+        self.play(UpdateFromAlphaFunc(q_spread, lambda mob, alpha: q_spread.become(
+            Sphere(radius=smooth(alpha)*3).set_opacity(1-(1-0.2)*smooth(alpha)).set_color(BLUE_D)
+        ), rate_func=linear))
+        self.wait()
 
 
 DEBUG = False
@@ -1148,11 +1180,20 @@ class Blackboard(Scene):
         self.biot_savart_law_title = (Text("毕奥-萨伐尔定律:", font_size=36)
                                       .next_to(self.i_title, DOWN, aligned_edge=UL, buff=0.8))
         self.biot_savart_law = (Tex(
-            R"\vec{B} = {\mu_0  \over 4 \pi} {q \vec{v} \times \vec{e}_r  \over r^2 }"
+            R"\vec{B} = {\mu_0  \over 4 \pi } {q \vec{v} \times \vec{e}_r  \over r^2 }"
             R"        = {\mu_0 \over 4 \pi} {I \Delta \vec{l} \times \vec{e}_r \over r^2}"
         ).scale(0.75).next_to(self.biot_savart_law_title, RIGHT, aligned_edge=LEFT, buff=1.6))
         self.biot_savart_law_mu0 = (TexText(R"真空磁导率", color=YELLOW, font_size=36)
                                     .next_to(self.biot_savart_law[R"\mu_0  "], UP, aligned_edge=DL, buff=0.3))
+
+        self.line_b_title = (Text("无限长通电直导线的磁场:", font_size=36)
+                             .next_to(self.biot_savart_law_title, DOWN, aligned_edge=UL, buff=0.8))
+        self.line_b_1 = (Tex(
+            R"B = {\mu_0 I l \over 2 \pi r l}"
+        ).scale(0.75).next_to(self.line_b_title, RIGHT, aligned_edge=LEFT, buff=2.2))
+        self.line_b_2 = (Tex(
+            R"B = {\mu_0 I \over 2 \pi r}"
+        ).scale(0.75).next_to(self.line_b_title, RIGHT, aligned_edge=LEFT, buff=2.2))
 
     def construct(self) -> None:
         if DEBUG and self.SPLIT:
@@ -1233,7 +1274,7 @@ class Blackboard(Scene):
         self.wait()
         self.play(Write(self.biot_savart_law_title))
         self.play(Write(self.biot_savart_law[
-                            R"\vec{B} = {\mu_0  \over 4 \pi} {q \vec{v} \times \vec{e}_r  \over r^2 }"
+                            R"\vec{B} = {\mu_0  \over 4 \pi } {q \vec{v} \times \vec{e}_r  \over r^2 }"
                         ]))
         self.wait()
         self.play(ShowCreationThenFadeAround(self.biot_savart_law[R"\mu_0  "]))
@@ -1254,7 +1295,7 @@ class Blackboard(Scene):
         self.wait()
         self.play(TransformFromCopy(
             self.biot_savart_law[
-                R"= {\mu_0  \over 4 \pi} {q \vec{v} \times \vec{e}_r  \over r^2 }"
+                R"= {\mu_0  \over 4 \pi } {q \vec{v} \times \vec{e}_r  \over r^2 }"
             ], self.biot_savart_law[
                 R"= {\mu_0 \over 4 \pi} {I \Delta \vec{l} \times \vec{e}_r \over r^2}"
             ],
@@ -1262,3 +1303,20 @@ class Blackboard(Scene):
             run_time=2
         ))
         self.wait()
+        fpi = self.biot_savart_law[R"4 \pi "]
+        t, b, l, r = fpi.get_top(), fpi.get_bottom(), fpi.get_left(), self.biot_savart_law[R"r^2 "].get_right()
+        rect = (Rectangle((r - l)[0] + 0.2, (t - b)[1] + 0.2)
+                .move_to(((r+l)[0]/2, (t+b)[1]/2, 0))
+                .set_stroke(YELLOW))
+        self.play(ShowCreationThenFadeOut(rect))
+        self.wait()
+        self.play(Write(self.line_b_title))
+        self.play(Write(self.line_b_1))
+        self.wait()
+        self.play(TransformMatchingTex(self.line_b_1, self.line_b_2, key_map={
+            R"\mu_0 I": R"\mu_0 I",
+            R"2 \pi r": R"2 \pi r",
+            R"\over": R"\over"
+        }, run_time=1))
+        self.wait()
+        self.play(ShowCreationThenFadeAround(self.coulombs_law[R"4 \pi \varepsilon_0"]))
