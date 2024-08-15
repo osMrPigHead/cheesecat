@@ -1022,6 +1022,74 @@ class NoPotentialForMagnet(Scene):
         self.wait()
 
 
+class BiotSavartLaw(Scene):
+    """tested with commit 259640f5 in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        def fb(x, y):
+            return 2 * np.array((-y, x)) / get_norm((x, y)) ** 3
+        self.camera.frame.rotate(PI / 12, axis=LEFT)
+        self.camera.frame.rotate(PI / 6, axis=DOWN)
+        axes = ThreeDAxes((-4, 4, 1), (-3, 3, 1), (-3, 3, 1),
+                          axis_config={"include_tip": True}, z_axis_config={"include_tip": True})
+        axes.shift(-axes.get_origin())
+        axes2 = Axes((-4, 4, 1), (-3, 3, 1))
+        i_arrow = (FillArrow(axes.c2p(0, 0, 0), axes.c2p(0, 0, 5/4))
+                   .set_color(BLUE))
+        i_tex = Tex(R"I", color=BLUE).next_to(i_arrow, UP)
+        e_field = VectorField(lambda x, y, z: (0, 0, 0), axes, step_multiple=0.8)
+        b_field = AnimatedStreamLines(StreamLines(fb, axes2))
+        self.add(axes, i_arrow, i_tex, e_field)
+        self.wait()
+        self.play(e_field.animate.become(VectorField(
+            lambda x, y, z: 4 * np.array((x, y, z)) / get_norm((x, y, z)) ** 3
+            if get_norm((x, y, z)) != 0 else (0, 0),
+            axes, step_multiple=0.8
+        )))
+        self.wait()
+        self.add(b_field)
+        self.play(FadeOut(e_field))
+        self.wait(8)
+        dot = Ball(axes2.c2p(3, 2), 0.1, color=WHITE)
+        self.play(FadeIn(dot))
+        self.wait()
+        lop = DashedLine(axes2.c2p(3, 2), axes2.c2p(0, 0), stroke_color=WHITE,
+                         dash_length=0.1)
+        vec = Arrow(axes2.c2p(3, 2),
+                    axes2.c2p(*(4*fb(3, 2) + np.array((3, 2)))),
+                    stroke_color=BLUE_D,
+                    buff=0)
+        self.remove(i_tex, dot)
+        self.add(lop, vec, i_tex, dot)
+        self.play(ShowCreation(lop), Write(vec))
+        self.wait()
+
+
+class IntegralB(Scene):
+    """tested with commit 259640f5 in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        # Blackboard 分屏
+        if DEBUG:
+            self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT)
+                     .to_edge(RIGHT, buff=0)
+                     .fix_in_frame())  # 答题卡裁切线 (bushi
+
+        line = Cylinder(height=30, radius=0.2, color=GREY_D).rotate(PI/2, UP)
+        line_section = (Cylinder(height=0.5, radius=0.2, color=GREY_D)
+                        .rotate(PI/2, UP).move_to((4.5, 0, 0)))
+        i_arrow = Arrow((4, 1, 0), (6, 1, 0), stroke_color=BLUE_D)
+        i_tex = Tex(R"I", color=BLUE_D).next_to(i_arrow, UP)
+        dl_tex = Tex(R"\Delta \vec{l}").next_to(line_section, DOWN)
+        self.camera.frame.rotate(PI*2/5, UP)
+        self.camera.frame.rotate(PI/6, OUT)
+        self.camera.frame.shift((0, -3.5, 0))
+        self.play(FadeIn(line), Write(i_arrow), Write(i_tex))
+        self.wait()
+        self.add(line_section)
+        self.play(fade_update(line, 0.4, src_opacity=1),
+                  Write(dl_tex))
+        self.wait()
+
+
 DEBUG = False
 
 
@@ -1077,6 +1145,15 @@ class Blackboard(Scene):
             R"\small A\;(安培)", color=YELLOW
         ).scale(0.75).next_to(self.i, DOWN, aligned_edge=UP, buff=0.6)
 
+        self.biot_savart_law_title = (Text("毕奥-萨伐尔定律:", font_size=36)
+                                      .next_to(self.i_title, DOWN, aligned_edge=UL, buff=0.8))
+        self.biot_savart_law = (Tex(
+            R"\vec{B} = {\mu_0  \over 4 \pi} {q \vec{v} \times \vec{e}_r  \over r^2 }"
+            R"        = {\mu_0 \over 4 \pi} {I \Delta \vec{l} \times \vec{e}_r \over r^2}"
+        ).scale(0.75).next_to(self.biot_savart_law_title, RIGHT, aligned_edge=LEFT, buff=1.6))
+        self.biot_savart_law_mu0 = (TexText(R"真空磁导率", color=YELLOW, font_size=36)
+                                    .next_to(self.biot_savart_law[R"\mu_0  "], UP, aligned_edge=DL, buff=0.3))
+
     def construct(self) -> None:
         if DEBUG and self.SPLIT:
             match self.SPLIT:  # 答题卡裁切线 (bushi
@@ -1084,7 +1161,8 @@ class Blackboard(Scene):
                 case 2: self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT).to_edge(RIGHT, buff=0))
         # self.e_field()
         # self.potential()
-        self.conduction_current()
+        # self.conduction_current()
+        self.biot_savart()
 
     def e_field(self) -> None:
         self.add(self.coulombs_law_title, self.coulombs_law)
@@ -1145,4 +1223,42 @@ class Blackboard(Scene):
         self.play(Write(self.i_unit_1))
         self.wait()
         self.play(Transform(self.i_unit_1, self.i_unit_2))
+        self.wait()
+
+    def biot_savart(self) -> None:
+        self.add(self.coulombs_law_title, self.coulombs_law,
+                 self.e_field_intensity_title, self.e_field_intensity, self.f_qe,
+                 self.phi_title, self.phi,
+                 self.i_title, self.i)
+        self.wait()
+        self.play(Write(self.biot_savart_law_title))
+        self.play(Write(self.biot_savart_law[
+                            R"\vec{B} = {\mu_0  \over 4 \pi} {q \vec{v} \times \vec{e}_r  \over r^2 }"
+                        ]))
+        self.wait()
+        self.play(ShowCreationThenFadeAround(self.biot_savart_law[R"\mu_0  "]))
+        self.wait()
+        self.play(Write(self.biot_savart_law_mu0))
+        self.wait()
+        self.play(ShowCreationThenFadeAround(self.biot_savart_law[R"\vec{e}_r  "]))
+        self.wait()
+        self.play(ShowCreationThenFadeAround(self.biot_savart_law[R"r^2 "]))
+        self.wait()
+        self.play(ShowCreationThenFadeAround(self.biot_savart_law[R"\vec{B}"]))
+        self.wait()
+        self.play(CircleIndicate(self.biot_savart_law[R"r^2 "]),
+                  CircleIndicate(self.e_field_intensity[R"r^2"]))
+        self.wait()
+        self.play(CircleIndicate(self.biot_savart_law[R"q \vec{v}"]),
+                  CircleIndicate(self.e_field_intensity[R"q_0"]))
+        self.wait()
+        self.play(TransformFromCopy(
+            self.biot_savart_law[
+                R"= {\mu_0  \over 4 \pi} {q \vec{v} \times \vec{e}_r  \over r^2 }"
+            ], self.biot_savart_law[
+                R"= {\mu_0 \over 4 \pi} {I \Delta \vec{l} \times \vec{e}_r \over r^2}"
+            ],
+            path_arc=2,
+            run_time=2
+        ))
         self.wait()
