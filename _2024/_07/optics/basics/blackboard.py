@@ -5,7 +5,7 @@ from manimlib import *
 
 class Blackboard(Scene):
     """tested with commit 259640f5 in osMrPigHead/manimgl"""
-    SPLIT = 1
+    SPLIT = 2
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -73,6 +73,26 @@ class Blackboard(Scene):
             R"B = {\mu_0 I \over 2 \pi r}"
         ).scale(0.75).next_to(self.line_b_title, RIGHT, aligned_edge=LEFT, buff=2.2))
 
+        self.part1all = [self.coulombs_law_title, self.coulombs_law,
+                         self.e_field_intensity_title, self.e_field_intensity, self.f_qe,
+                         self.phi_title, self.phi,
+                         self.i_title, self.i,
+                         self.biot_savart_law_title, self.biot_savart_law,
+                         self.line_b_title, self.line_b_2]
+
+        self.dynamic_emf_title = (Text("动生电动势:", font_size=36)
+                                  .to_edge(UL, buff=0.5).shift((FRAME_X_RADIUS, 0, 0)))
+        self.dynamic_emf = Tex(
+            R"\mathscr{E} = -Blv"
+        ).scale(0.75).next_to(self.dynamic_emf_title, RIGHT, aligned_edge=LEFT, buff=1.2)
+
+        self.lenzs_law = (Text("楞次定律: 感应电流的效果总是反抗引起感应电流的原因.",
+                               line_width=FRAME_X_RADIUS - 1, font_size=36)
+                          .next_to(self.dynamic_emf_title, DOWN, aligned_edge=UL, buff=0.8))
+
+        self.part2all = [self.dynamic_emf_title, self.dynamic_emf,
+                         self.lenzs_law]
+
     def construct(self) -> None:
         if DEBUG and self.SPLIT:
             match self.SPLIT:  # 答题卡裁切线 (bushi
@@ -81,10 +101,11 @@ class Blackboard(Scene):
         # self.e_field()
         # self.potential()
         # self.conduction_current()
-        self.biot_savart()
+        # self.biot_savart()
+        self.lenzs()
 
     def e_field(self) -> None:
-        self.add(self.coulombs_law_title, self.coulombs_law)
+        self.add(*self.part1all[:2])
         self.wait()
 
         self.play(ShowCreationThenFadeAround(self.coulombs_law[R"q"]))
@@ -107,8 +128,7 @@ class Blackboard(Scene):
         self.wait()
 
     def potential(self) -> None:
-        self.add(self.coulombs_law_title, self.coulombs_law,
-                 self.e_field_intensity_title, self.e_field_intensity, self.f_qe)
+        self.add(*self.part1all[:5])
         self.wait()
 
         self.play(ShowCreationThenFadeAround(self.f_qe[R"q"]))
@@ -130,9 +150,7 @@ class Blackboard(Scene):
         self.wait()
 
     def conduction_current(self) -> None:
-        self.add(self.coulombs_law_title, self.coulombs_law,
-                 self.e_field_intensity_title, self.e_field_intensity, self.e_field_intensity_unit_1, self.f_qe,
-                 self.phi_title, self.phi)
+        self.add(*self.part1all[:-6], self.e_field_intensity_unit_1)
         self.wait()
         self.play(Transform(self.e_field_intensity_unit_1, self.e_field_intensity_unit_2))
         self.wait()
@@ -145,10 +163,7 @@ class Blackboard(Scene):
         self.wait()
 
     def biot_savart(self) -> None:
-        self.add(self.coulombs_law_title, self.coulombs_law,
-                 self.e_field_intensity_title, self.e_field_intensity, self.f_qe,
-                 self.phi_title, self.phi,
-                 self.i_title, self.i)
+        self.add(*self.part1all[:-4])
         self.wait()
         self.play(Write(self.biot_savart_law_title))
         self.play(Write(self.biot_savart_law[
@@ -198,4 +213,10 @@ class Blackboard(Scene):
         }, run_time=1))
         self.wait()
         self.play(ShowCreationThenFadeAround(self.coulombs_law[R"4 \pi \varepsilon_0"]))
+        self.wait()
+
+    def lenzs(self) -> None:
+        self.add(*self.part1all, *self.part2all[:2])
+        self.wait()
+        self.play(Write(self.lenzs_law))
         self.wait()

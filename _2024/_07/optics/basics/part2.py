@@ -167,3 +167,61 @@ class InducedEMFLeadin(Scene):
                   FadeTransform(title, Text("感生电场", font_size=56)
                   .to_edge(UP)))
         self.wait()
+
+
+class LenzsLawCorrect(Scene):
+    """tested with commit a4210293 in osMrPighead/manimgl"""
+    def construct(self) -> None:
+        mark = Checkmark().to_edge(DR).shift((-FRAME_X_RADIUS/2, 0, 0)).fix_in_frame()
+        self.camera.frame.rotate(PI/12, axis=LEFT)
+        self.camera.frame.rotate(PI/6, axis=DOWN)
+        line = Torus(r1=1.2, r2=0.15).rotate(PI/2, RIGHT)
+        asl_b = AnimatedStreamLines(StreamLines(
+            lambda x, y, z: (0, (y+3)/3, 0)
+            if get_norm((x, z)) <= 1 else (0, 0, 0),
+            ThreeDAxes((-1, 1, 1), (-3, 3, 1), (-1, 1, 1),
+                       width=1.6, height=6, depth=1.6)
+        ))
+        self.add(line, asl_b)
+        self.wait()
+        asl_e = AnimatedStreamLines(StreamLines(
+            lambda x, y: np.array((-y, x)) / get_norm((x, y))**3,
+            Axes((-1, 1, 1), (-1, 1, 1), width=1.2, height=1.2).move_to((1.2, 0, 0))
+        ))
+        e_arrow = (Arc(PI*2/3, -PI/3, 1.4)
+                   .set_color(GREEN).add_tip()
+                   .rotate(PI/2, RIGHT, ORIGIN).shift((0, -0.5, 0)))
+        self.add(asl_e)
+        self.play(Write(e_arrow))
+        self.wait()
+        self.play(Write(mark))
+        self.wait()
+
+
+class LenzsLawWrong(Scene):
+    """tested with commit a4210293 in osMrPighead/manimgl"""
+    def construct(self) -> None:
+        mark = Exmark().to_edge(DL).shift((-FRAME_X_RADIUS/2, 0, 0)).fix_in_frame()
+        self.camera.frame.rotate(PI/12, axis=LEFT)
+        self.camera.frame.rotate(PI/6, axis=DOWN)
+        line = Torus(r1=1.2, r2=0.15).rotate(PI/2, RIGHT)
+        asl_b = AnimatedStreamLines(StreamLines(
+            lambda x, y, z: (0, (y+3)/3, 0)
+            if get_norm((x, z)) <= 1 else (0, 0, 0),
+            ThreeDAxes((-1, 1, 1), (-3, 3, 1), (-1, 1, 1),
+                       width=1.6, height=6, depth=1.6)
+        ))
+        self.add(line, asl_b)
+        self.wait()
+        asl_e = AnimatedStreamLines(StreamLines(
+            lambda x, y: np.array((y, -x)) / get_norm((x, y))**3,
+            Axes((-1, 1, 1), (-1, 1, 1), width=1.2, height=1.2).move_to((1.2, 0, 0))
+        ))
+        e_arrow = (Arc(PI/3, PI/3, 1.4)
+                   .set_color(GREEN).add_tip()
+                   .rotate(PI/2, RIGHT, ORIGIN).shift((0, -0.5, 0)))
+        self.add(asl_e)
+        self.play(Write(e_arrow))
+        self.wait()
+        self.play(Write(mark))
+        self.wait()
