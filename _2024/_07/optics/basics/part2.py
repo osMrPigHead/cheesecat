@@ -1,5 +1,6 @@
 """基础知识篇 Part 2: 电磁感应"""
 from _2024._07.optics.mobject import *
+from cc_config import *
 from customs.utils import *
 from manimlib import *
 
@@ -172,6 +173,10 @@ class InducedEMFLeadin(Scene):
 class LenzsLawCorrect(Scene):
     """tested with commit a4210293 in osMrPighead/manimgl"""
     def construct(self) -> None:
+        # LenzsLawWrong 分屏
+        if DEBUG:
+            self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT))  # 答题卡裁切线 (bushi
+
         mark = Checkmark().to_edge(DR).shift((-FRAME_X_RADIUS/2, 0, 0)).fix_in_frame()
         self.camera.frame.rotate(PI/12, axis=LEFT)
         self.camera.frame.rotate(PI/6, axis=DOWN)
@@ -201,6 +206,10 @@ class LenzsLawCorrect(Scene):
 class LenzsLawWrong(Scene):
     """tested with commit a4210293 in osMrPighead/manimgl"""
     def construct(self) -> None:
+        # LenzsLawCorrect 分屏
+        if DEBUG:
+            self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT))  # 答题卡裁切线 (bushi
+
         mark = Exmark().to_edge(DL).shift((-FRAME_X_RADIUS/2, 0, 0)).fix_in_frame()
         self.camera.frame.rotate(PI/12, axis=LEFT)
         self.camera.frame.rotate(PI/6, axis=DOWN)
@@ -224,4 +233,140 @@ class LenzsLawWrong(Scene):
         self.play(Write(e_arrow))
         self.wait()
         self.play(Write(mark))
+        self.wait()
+
+
+class FaradaysLawView1(Scene):
+    """tested with commit a4210293 in osMrPighead/manimgl"""
+    def construct(self) -> None:
+        # FaradaysLawView2 分屏
+        if DEBUG:
+            self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT))  # 答题卡裁切线 (bushi
+
+        xxxxxx114514 = (VGroup(*(Text("+", font_size=20, color=BLUE_D)
+                               .rotate(PI / 4)
+                               .move_to((x, y + 0.5, 0))
+                                 for x in range(-16, 16) for y in range(-10, 10))))
+        line = (SVGMobject("optics/casual_coil.svg")
+                .scale(1.5).set_stroke(WHITE, 4).set_fill(opacity=0))
+        line.move_to(-line.get_center_of_mass())
+        tex = Tex(R"B S").shift((-0.4, 0, 0))
+        self.add(xxxxxx114514, line)
+        self.wait()
+        self.play(Write(tex[R"S"]))
+        self.play(xxxxxx114514.animate.become(VGroup(*(Text("+", font_size=20, color=BLUE_D)
+                                                     .rotate(PI / 4)
+                                                     .move_to((x*2/3, (y + 0.5)*2/3, 0))
+                                                       for x in range(-16, 16) for y in range(-10, 10)))))
+        self.wait()
+        self.play(Write(tex[R"B"]))
+        self.wait()
+        self.play(TransformMatchingTex(tex, Tex(R"S \Delta B").shift((-0.4, 0, 0)),
+                                       path_arc=1, path_arc_axis=IN))
+        self.wait()
+        self.play(xxxxxx114514.animate.become(VGroup(*(Text("+", font_size=20, color=BLUE_D)
+                                                     .rotate(PI / 4)
+                                                     .move_to((x/2, (y + 0.5)/2, 0))
+                                                       for x in range(-16, 16) for y in range(-10, 10)))))
+        self.wait()
+
+
+class FaradaysLawView2(Scene):
+    """tested with commit a4210293 in osMrPighead/manimgl"""
+    def construct(self) -> None:
+        # FaradaysLawView1 分屏
+        if DEBUG:
+            self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT))  # 答题卡裁切线 (bushi
+
+        xxxxxx114514 = (VGroup(*(Text("+", font_size=20, color=BLUE_D)
+                               .rotate(PI / 4)
+                               .move_to((x*2/3, (y + 0.5)*2/3, 0))
+                                 for x in range(-16, 16) for y in range(-10, 10))))
+        line = (SVGMobject("optics/casual_coil.svg")
+                .scale(1.5).set_stroke(WHITE, 4).set_fill(opacity=0))
+        line.shift(-line.get_center_of_mass())
+        tex = Tex(R"S \Delta B").shift((-0.4, 0, 0))
+        self.add(xxxxxx114514, line, tex)
+        self.wait()
+
+        def f(p):
+            n = npcross(p - npforward(p), (0, 0, 1))
+            nn = sum(n[..., i]**2 for i in range(3))**0.5
+            n[nn == 0] = n[npforward(nn) == 0]
+            nn[nn == 0] = nn[npforward(nn) == 0]
+            return p + (n.T / nn * 0.4).T
+        line.generate_target().apply_points_function(f).set_stroke(WHITE, 2)
+        self.play(TransformFromCopy(line, line.target))
+        self.wait()
+        self.play(TransformMatchingTex(tex, Tex(R"B \Delta S").shift((-0.4, 0, 0)),
+                                       path_arc=1, path_arc_axis=IN))
+        self.wait()
+        diffrence = Difference(line.target, line).set_color(PURPLE).set_fill(opacity=0.6)
+        self.add(diffrence)
+        self.play(fade_update(diffrence, 0.6))
+        self.wait()
+        rect = Rectangle(5, 0.3).to_edge(DOWN).set_color(PURPLE).set_fill(opacity=0.6)
+        self.play(Transform(diffrence, rect))
+        self.wait()
+
+
+class FaradaysLawFormula(Scene):
+    """tested with commit a4210293 in osMrPighead/manimgl"""
+    def construct(self) -> None:
+        evb = Tex(R"\vec{E} = \vec{v} \times \vec{B}").shift((0, 2, 0))
+        self.play(FadeIn(BackgroundRectangle(evb)), Write(evb))
+        self.wait()
+        sdb = Tex(R"B \Delta  S  = S \Delta B").next_to(evb, DOWN, aligned_edge=UP, buff=0.6)
+        self.play(FadeIn(BackgroundRectangle(sdb)), Write(sdb))
+        self.wait()
+        self.play(TransformMatchingTex(
+            sdb,
+            sdb := Tex(R"B l v \Delta  t = S \Delta B").next_to(evb, DOWN, aligned_edge=UP, buff=0.6),
+            key_map={
+                R"B ": R"B l v",
+                R"\Delta  ": R"\Delta  ",
+                R"= S \Delta B": R"= S \Delta B"
+            }
+        ))
+        self.wait()
+        self.play(TransformMatchingTex(
+            sdb,
+            sdb := Tex(R"v B l \Delta t = S \Delta B").next_to(evb, DOWN, aligned_edge=UP, buff=0.6),
+            key_map={
+                R"B ": R"B ",
+                R"l ": R"l ",
+                R"v ": R"v ",
+                R"\Delta  t = S \Delta B": R"\Delta t = S \Delta B"
+            },
+            path_arc=2
+        ))
+        self.wait()
+        self.play(TransformMatchingTex(
+            sdb,
+            sdb := Tex(R"E l \Delta t = S \Delta B").next_to(evb, DOWN, aligned_edge=UP, buff=0.6),
+            key_map={
+                R"v B": R"E",
+                R"l": R"l",
+                R" \Delta t = S \Delta B": R" \Delta t = S \Delta B"
+            }
+        ))
+        self.wait()
+        self.play(TransformMatchingTex(
+            sdb,
+            sdb := Tex(R"\mathscr{E} = {S \Delta B \over \Delta t}").next_to(evb, DOWN, aligned_edge=UP, buff=0.6),
+            key_map={
+                R"E l": R"\mathscr{E}",
+                R"\Delta t": R"\Delta t",
+                R"S \Delta B": R"S \Delta B"
+            }
+        ))
+        self.wait()
+        self.play(TransformMatchingTex(
+            sdb,
+            Tex(R"\mathscr{E} = -{S \Delta B \over \Delta t}").next_to(evb, DOWN, aligned_edge=UP, buff=0.6),
+            key_map={
+                R"\mathscr{E} =": R"\mathscr{E} = ",
+                R"{S \Delta B \over \Delta t}": R"{S \Delta B \over \Delta t}"
+            }
+        ))
         self.wait()

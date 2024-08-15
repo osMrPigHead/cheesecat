@@ -86,11 +86,18 @@ class Blackboard(Scene):
             R"\mathscr{E} = -Blv"
         ).scale(0.75).next_to(self.dynamic_emf_title, RIGHT, aligned_edge=LEFT, buff=1.2)
 
+        self.faradays_law_title = (Text("法拉第电磁感应定律:", font_size=36)
+                                   .to_edge(UL, buff=0.5).shift((FRAME_X_RADIUS, 0, 0)))
+        self.faradays_law = Tex(
+            R"\mathscr{E} = - {S \Delta B \over \Delta t} = - {B \Delta S \over \Delta t} "
+            R"            = - {\Delta \Phi \over \Delta t}"
+        ).scale(0.75).next_to(self.faradays_law_title, DOWN, aligned_edge=UL, buff=0.8)
+
         self.lenzs_law = (Text("楞次定律: 感应电流的效果总是反抗引起感应电流的原因.",
                                line_width=FRAME_X_RADIUS - 1, font_size=36)
-                          .next_to(self.dynamic_emf_title, DOWN, aligned_edge=UL, buff=0.8))
+                          .next_to(self.faradays_law, DOWN, aligned_edge=UL, buff=0.8))
 
-        self.part2all = [self.dynamic_emf_title, self.dynamic_emf,
+        self.part2all = [self.faradays_law_title, self.faradays_law,
                          self.lenzs_law]
 
     def construct(self) -> None:
@@ -102,7 +109,8 @@ class Blackboard(Scene):
         # self.potential()
         # self.conduction_current()
         # self.biot_savart()
-        self.lenzs()
+        # self.lenzs()
+        self.faraday()
 
     def e_field(self) -> None:
         self.add(*self.part1all[:2])
@@ -215,8 +223,16 @@ class Blackboard(Scene):
         self.play(ShowCreationThenFadeAround(self.coulombs_law[R"4 \pi \varepsilon_0"]))
         self.wait()
 
-    def lenzs(self) -> None:
-        self.add(*self.part1all, *self.part2all[:2])
+    def lenz(self) -> None:
+        self.add(*self.part1all,
+                 self.dynamic_emf_title, self.dynamic_emf)
         self.wait()
         self.play(Write(self.lenzs_law))
+        self.wait()
+
+    def faraday(self) -> None:
+        self.add(*self.part1all, self.part2all[-1])
+        self.wait()
+        self.play(Write(self.faradays_law_title))
+        self.play(Write(self.faradays_law))
         self.wait()

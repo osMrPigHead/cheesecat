@@ -1,5 +1,6 @@
 __all__ = [
-    "npcross", "random", "fullrand", "randbetween",
+    "npcross", "npforward",
+    "random", "fullrand", "randbetween",
     "included_angle", "row_nditer",
     "fade_update_", "fade_update",
     "stroke_fade_update_", "stroke_fade_update",
@@ -44,6 +45,10 @@ def row_nditer(*op: np.ndarray, rw: bool = False):
     if rw:
         return np.nditer(op, flags=["external_loop"], op_flags=[["readwrite"]], order="F")
     return np.nditer(op, flags=["external_loop"], order="F")
+
+
+def npforward(arr: np.ndarray, axis: int = 0) -> np.ndarray:
+    return np.concatenate((arr[1:], arr[0:1]), axis)
 
 
 def fade_update_(dest_opacity: float, rate_func: Callable[[float], float] = smooth, src_opacity: float = 0) \
