@@ -136,3 +136,34 @@ class DynamicEMFFormula(Scene):
         dynamic_emf = Tex(R"\mathscr{E}=-Blv").to_edge(DL)
         self.play(FadeIn(BackgroundRectangle(dynamic_emf)), Write(dynamic_emf))
         self.wait()
+
+
+class InducedEMFLeadin(Scene):
+    """tested with commit 259640f5 in osMrPighead/manimgl"""
+    def construct(self) -> None:
+        xxxxxx114514 = (VGroup(*(Text("+", font_size=20, color=BLUE_D)
+                               .rotate(PI / 4)
+                               .move_to((x, y + 0.5, 0))
+                                 for x in range(-16, 16) for y in range(-10, 10))))
+        line = Torus(r1=2, r2=0.15)
+        self.add(xxxxxx114514, line)
+        self.wait()
+        self.play(xxxxxx114514.animate.become(VGroup(*(Text("+", font_size=20, color=BLUE_D)
+                                                     .rotate(PI / 4)
+                                                     .move_to((x/2, (y + 0.5)/2, 0))
+                                                       for x in range(-16, 16) for y in range(-10, 10)))))
+        self.wait()
+        i_arrow = Arc(PI*2/3, -PI/3, 1.6).set_color(BLUE_D).add_tip()
+        i_tex = Tex(R"I", color=BLUE_D).next_to(i_arrow, DOWN)
+        self.play(Write(i_arrow), Write(i_tex))
+        self.wait()
+        title = (Text("感生电动势", font_size=56)
+                 .to_edge(UP))
+        self.play(FadeIn(BackgroundRectangle(title)), Write(title))
+        self.wait()
+        e_arrow = Arc(-PI/3, -PI/3, 1.6).set_color(GREEN).add_tip()
+        e_tex = Tex(R"E", color=GREEN).next_to(e_arrow, UP)
+        self.play(Write(e_arrow), Write(e_tex),
+                  FadeTransform(title, Text("感生电场", font_size=56)
+                  .to_edge(UP)))
+        self.wait()
