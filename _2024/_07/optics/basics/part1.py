@@ -464,7 +464,7 @@ class Potential(Scene):
 
 
 class PotentialFormula(Scene):
-    """tested with commit 259640f5 in osMrPigHead/manimgl
+    """tested with commit dca378a6 in osMrPigHead/manimgl
     新版公式渲染不正常"""
     def construct(self) -> None:
         coulombs_law = Tex(
@@ -748,7 +748,7 @@ class ButNotForMagnet(Scene):
         r = 3
         m = TrueDot(color=BLUE_D, radius=r+1/4).make_3d()
         n_text = Text("S", font_size=192, color=BLUE_E)
-        self.add(m, n_text)
+        self.add(m, n_text, Cross(m, stroke_width=[2, 16, 2]))
 
 
 class BigQuestionMark(big_question_mark.BigQuestionMark):

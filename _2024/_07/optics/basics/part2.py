@@ -417,6 +417,17 @@ class DisplacementCurrent(Scene):
                  .to_edge(UP))
         self.play(FadeIn(BackgroundRectangle(title)), Write(title), Write(i_d_tex))
         self.wait()
+        buff = DEFAULT_MOBJECT_TO_MOBJECT_BUFFER
+        left_ = (Prism(0.01, 3, 2)
+                 .set_color(BLUE_D).set_opacity(0.6)
+                 .next_to(left, LEFT, buff=buff))
+        right_ = (Prism(0.01, 3, 2)
+                  .set_color(BLUE_D).set_opacity(0.6)
+                  .next_to(left, RIGHT, buff=buff))
+        self.play(FadeIn(left_, shift=LEFT*buff), FadeIn(right_, shift=RIGHT*buff))
+        self.wait()
+        self.play(FadeOut(left_, shift=RIGHT*buff), FadeOut(right_, shift=LEFT*buff))
+        self.wait()
 
 
 class DisplacementCurrentFormula(Scene):
