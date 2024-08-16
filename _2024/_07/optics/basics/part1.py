@@ -179,8 +179,9 @@ class EField(QProbeCircling):
             magnitude_range=(0.5, 5)
         ))
         self.add(asl)
-        self.wait(5)
-        self.play(FadeOut(asl))
+        self.wait(13)
+        self.play(stroke_fade_update(asl, 0, smooth, 1))
+        self.wait()
 
         backs = [BackgroundRectangle(mob) for mob in
                  [self.axes, self.field, self.force, self.q_probe]]
@@ -205,26 +206,6 @@ class EField(QProbeCircling):
                                                    self.axes.c2p(-2, -2))))
         self.wait()
         self.play(WiggleOutThenIn(self.force))
-
-
-class EFieldAnimatedStreamLines(QProbeCircling):
-    """tested with commit 656f98fd in osMrPigHead/manimgl"""
-    def construct(self) -> None:
-        self.add(self.axes, self.field, self.q_source, self.force, self.q_probe)
-        self.field.become(VectorField(
-            lambda x, y: self.q_source.get_e((x, y)) / 4,
-            self.axes
-        ))
-        self.add(BackgroundRectangle(title := Text("电场", font_size=56).to_edge(UP)), title)
-        self.q_probe.move_to(self.axes.c2p(-3, -2))
-        asl = AnimatedStreamLines(StreamLines(
-            lambda x, y: (x*0.7+y*0.5, y*0.7-x*0.5),
-            self.axes,
-            magnitude_range=(0.5, 5)
-        ))
-        self.add(asl)
-        self.wait(10)
-        self.play(stroke_fade_update(asl, 0, smooth, 1))
 
 
 class UniformEField(Scene):
@@ -305,7 +286,7 @@ class PotentialLeadin(QProbeCircling):
 
 
 class Potential(Scene):
-    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    """tested with commit dca378a6 in osMrPigHead/manimgl"""
     def construct(self) -> None:
         source = Ball((-3, 0, 0), 0.4)
         tex_s = (Tex(R"M")
@@ -464,7 +445,7 @@ class Potential(Scene):
 
 
 class PotentialFormula(Scene):
-    """tested with commit dca378a6 in osMrPigHead/manimgl
+    """tested with commit 259640f5 in osMrPigHead/manimgl
     新版公式渲染不正常"""
     def construct(self) -> None:
         coulombs_law = Tex(
@@ -489,7 +470,7 @@ class PotentialFormula(Scene):
 
 
 class ConductionCurrent(Scene):
-    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    """tested with commit dca378a6 in osMrPigHead/manimgl"""
     def construct(self) -> None:
         conduction_line = Cylinder(height=8, radius=0.15, color=GREY_D).rotate(PI/2, UP)
         self.add(conduction_line)
@@ -504,7 +485,7 @@ class ConductionCurrent(Scene):
         self.add(left, right, left_arrow, right_arrow, u_tex, conduction_line)
         self.play(*(Write(mob) for mob in [left, right, left_arrow, right_arrow, u_tex]))
         self.wait()
-        electrons = Group(*(Electron((x, 0, 1)) for x in np.arange(-40, 10, 0.5)))
+        electrons = Group(*(Electron((x, 0, 1)) for x in np.arange(-90, 10, 0.5)))
         self.play(UpdateFromAlphaFunc(electrons, lambda mob, alpha: (
             mob.set_opacity(alpha),
             mob.shift((2*alpha/DEFAULT_FPS, 0, 0)),
@@ -540,7 +521,7 @@ class ConductionCurrent(Scene):
                   UpdateFromAlphaFunc(electrons, lambda mob, alpha: mob.shift((2*alpha/DEFAULT_FPS, 0, 0))),
                   *(FadeOut(mob) for mob in [force, current, current_tex]))
         electrons.add_updater(lambda mob, dt: mob.shift((2*dt, 0, 0)))
-        self.wait()
+        self.wait(16)
 
         b_arrows = [
             FillArrow((-1.5, -0.35, 0.5+2**0.5/2), (-1.5, 0.35, 0.5+2**0.5/2),
@@ -560,7 +541,7 @@ class ConductionCurrent(Scene):
         ], time_span=(0.8, 1.5)), MoveAlongBezier(Charge((0, 0, 0), 1, 0.1, 0), [
             coord(-1, -1/4), coord(1/2, -1/4), coord(1, -1)
         ], time_span=(1.2, 1.9)))
-        self.wait()
+        self.wait(3)
 
 
 class MovingChargeAsCurrent(Scene):
