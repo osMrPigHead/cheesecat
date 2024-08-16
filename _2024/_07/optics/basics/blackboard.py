@@ -97,8 +97,15 @@ class Blackboard(Scene):
                                line_width=FRAME_X_RADIUS - 1, font_size=36)
                           .next_to(self.faradays_law, DOWN, aligned_edge=UL, buff=0.8))
 
+        self.i_d_title = (Text("位移电流:", font_size=36)
+                        .next_to(self.lenzs_law, DOWN, aligned_edge=UL, buff=0.8))
+        self.i_d = Tex(
+            R"I_d = \varepsilon_0 S {\Delta E \over \Delta t}"
+        ).scale(0.75).next_to(self.i_d_title, RIGHT, aligned_edge=LEFT, buff=1)
+
         self.part2all = [self.faradays_law_title, self.faradays_law,
-                         self.lenzs_law]
+                         self.lenzs_law,
+                         self.i_d_title, self.i_d]
 
     def construct(self) -> None:
         if DEBUG and self.SPLIT:
@@ -110,7 +117,8 @@ class Blackboard(Scene):
         # self.conduction_current()
         # self.biot_savart()
         # self.lenzs()
-        self.faraday()
+        # self.faraday()
+        self.displacement_current()
 
     def e_field(self) -> None:
         self.add(*self.part1all[:2])
@@ -235,4 +243,11 @@ class Blackboard(Scene):
         self.wait()
         self.play(Write(self.faradays_law_title))
         self.play(Write(self.faradays_law))
+        self.wait()
+
+    def displacement_current(self) -> None:
+        self.add(*self.part1all, *self.part2all[:-2])
+        self.wait()
+        self.play(Write(self.i_d_title))
+        self.play(Write(self.i_d))
         self.wait()

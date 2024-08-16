@@ -1,4 +1,6 @@
 """基础知识篇 Part 2: 电磁感应"""
+import random
+
 from _2024._07.optics.mobject import *
 from cc_config import *
 from customs.utils import *
@@ -210,7 +212,7 @@ class LenzsLawWrong(Scene):
         if DEBUG:
             self.add(Rectangle(FRAME_WIDTH/2, FRAME_HEIGHT))  # 答题卡裁切线 (bushi
 
-        mark = Exmark().to_edge(DL).shift((-FRAME_X_RADIUS/2, 0, 0)).fix_in_frame()
+        mark = Exmark().to_edge(DL).shift((FRAME_X_RADIUS/2, 0, 0)).fix_in_frame()
         self.camera.frame.rotate(PI/12, axis=LEFT)
         self.camera.frame.rotate(PI/6, axis=DOWN)
         line = Torus(r1=1.2, r2=0.15).rotate(PI/2, RIGHT)
@@ -367,6 +369,84 @@ class FaradaysLawFormula(Scene):
             key_map={
                 R"\mathscr{E} =": R"\mathscr{E} = ",
                 R"{S \Delta B \over \Delta t}": R"{S \Delta B \over \Delta t}"
+            }
+        ))
+        self.wait()
+
+
+class DisplacementCurrent(Scene):
+    """tested with commit af8e5236 in osMrPigHead/manimgl"""
+    def construct(self) -> None:
+        left = Prism(0.2, 3, 2).set_color(GREY).move_to((-3, 0, 0))
+        right = Prism(0.2, 3, 2).set_color(GREY).move_to((3, 0, 0))
+        self.add(left, right)
+        self.wait()
+        electrons = Group(*(Electron((-2.8+fullrand(0.1), y*1.4/5, 1.2)) for y in range(-5, 6)))
+        self.play(fade_update(electrons, 1))
+        self.wait()
+        e_arrow = FillArrow(LEFT, RIGHT).set_color(GREEN)
+        e_tex = Tex(R"\vec{E}").set_color(GREEN).next_to(e_arrow, DOWN)
+        anims = []
+        eis = list(range(11))
+        for i in range(11):
+            ei = random.choice(eis)
+            eis.remove(ei)
+            electrons[ei].generate_target().set_x(2.8+fullrand(0.1))
+            y = electrons[ei].get_y()
+            anims += [MoveToTarget(electrons[ei], path_arc=(abs(y)-2)*sgn(y, 1), time_span=(i*0.8, i*0.8+0.6))]
+
+        def updater(mob, alpha):
+            t = alpha*8.6
+            if 0 <= t % 0.8 <= 0.6:
+                beta = t % 0.8 / 0.6
+                x = (t//0.8 + smooth(beta))/11
+                mob.put_start_and_end_on(x*LEFT, x*RIGHT)
+        self.add(e_arrow)
+        self.play(UpdateFromAlphaFunc(e_arrow, updater, run_time=8.6, rate_func=linear),
+                  *anims, Write(e_tex, time_span=(1, 1.5)))
+        self.wait()
+        rect = SurroundingRectangle(e_tex)
+        rect.shift(0.2*UP).rescale_to_fit(rect.get_height() + 0.5, 1)
+        self.play(ShowCreation(rect))
+        self.wait()
+        i_d_arrow = FillArrow(LEFT*2/3, RIGHT*2/3).set_color(BLUE_D).next_to(e_tex, DOWN)
+        i_d_tex = Tex(R"I_d").set_color(BLUE_D).next_to(i_d_arrow, DOWN)
+        self.play(Write(i_d_arrow))
+        self.wait()
+        title = (Text("位移电流", font_size=56)
+                 .to_edge(UP))
+        self.play(FadeIn(BackgroundRectangle(title)), Write(title), Write(i_d_tex))
+        self.wait()
+
+
+class DisplacementCurrentFormula(Scene):
+    """tested with commit a4210293 in osMrPighead/manimgl"""
+    def construct(self) -> None:
+        e_arrow = FillArrow(LEFT, RIGHT).set_color(GREEN)
+        i_d_formula = (Tex(R"\Delta E = {\Delta q \over \varepsilon_0 S}")
+                       .next_to(e_arrow, UP, aligned_edge=DOWN, buff=1))
+        self.play(Write(i_d_formula))
+        self.wait()
+        self.play(TransformMatchingTex(
+            i_d_formula,
+            i_d_formula := Tex(R"{\Delta E \over \Delta  t} = {\Delta q \over \varepsilon_0 S \Delta t}")
+            .next_to(e_arrow, UP, aligned_edge=DOWN, buff=1),
+            key_map={
+                R"\Delta E": R"\Delta E",
+                R"\Delta q": R"\Delta q",
+                R"\varepsilon_0 S": R"\varepsilon_0 S"
+            }
+        ))
+        self.wait()
+        self.play(TransformMatchingTex(
+            i_d_formula,
+            Tex(R"{\Delta E \over \Delta  t} = {I_d \over \varepsilon_0 S}")
+            .next_to(e_arrow, UP, aligned_edge=DOWN, buff=1),
+            key_map={
+                R"\Delta E": R"\Delta E",
+                R"\Delta  t": R"\Delta  t",
+                R"\Delta q": R"I_d",
+                R"\varepsilon_0 S": R"\varepsilon_0 S"
             }
         ))
         self.wait()

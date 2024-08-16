@@ -1,6 +1,6 @@
 __all__ = [
     "npcross", "npforward",
-    "random", "fullrand", "randbetween",
+    "random", "fullrand", "randbetween", "sgn",
     "included_angle", "row_nditer",
     "fade_update_", "fade_update",
     "stroke_fade_update_", "stroke_fade_update",
@@ -20,6 +20,14 @@ from manimlib import *
 # 就单独把 cross 函数拿出来避免这种提示 (强迫症
 npcross = np.cross
 random = Random(time.time())
+
+
+def sgn(x: float, zero_as: int = 0) -> int:
+    if x > 0:
+        return 1
+    if x == 0:
+        return zero_as
+    return -1
 
 
 def fullrand(x: float | complex = 1) -> float:
