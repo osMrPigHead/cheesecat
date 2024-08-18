@@ -8,7 +8,7 @@ from manimlib import *
 
 
 class DynamicEMF(Scene):
-    """tested with commit 656f98fd in osMrPighead/manimgl"""
+    """tested with commit dca378a6 in osMrPighead/manimgl"""
     def construct(self) -> None:
         xxxxxx114514 = (VGroup(*(Text("+", font_size=20, color=BLUE_D)
                                .rotate(PI/4)
@@ -17,7 +17,7 @@ class DynamicEMF(Scene):
         line = (Cylinder(radius=0.1, height=20)
                 .rotate(PI/2, RIGHT)
                 .move_to((-5, 0, 0))
-                .add_updater(lambda mob, dt: mob.shift((dt/4, 0, 0))))
+                .add_updater(lambda mob, dt: mob.shift((dt/10, 0, 0))))
         b_tex = Tex(R"B", color=BLUE_D).to_edge(UL)
         v_arrow = (Arrow(LEFT, RIGHT, stroke_color=YELLOW, buff=0)
                    .add_updater(lambda mob: mob.put_start_and_end_on(
@@ -29,18 +29,18 @@ class DynamicEMF(Scene):
                    .add_updater(lambda mob: mob.next_to(line, LEFT)))
         i_tex = Tex(R"I", color=BLUE_D).add_updater(lambda mob: mob.next_to(i_arrow, LEFT))
         self.add(xxxxxx114514, line)
-        self.wait()
+        self.wait(42-36)
         self.play(Write(i_arrow), Write(i_tex))
-        self.wait()
+        self.wait(52-42)
         self.remove(line)
         self.add(v_arrow, line)
         self.play(FadeIn(BackgroundRectangle(b_tex)), Write(b_tex),
                   Write(v_arrow), Write(v_tex))
-        self.wait()
+        self.wait(58-52)
         e1 = (Charge(ORIGIN, -1, 0.1, 0)
               .add_updater(lambda mob: mob.move_to(line.get_center() + (-0.02*line.get_center()[0], 0, 0.2))))
         self.play(FadeIn(e1))
-        self.wait()
+        self.wait(60-58)
         lorentz_force_arrow1 = (Arrow(LEFT, RIGHT, stroke_color=YELLOW, buff=0)
                                 .add_updater(lambda mob: mob.put_start_and_end_on(
                                     e1.get_center(),
@@ -52,13 +52,13 @@ class DynamicEMF(Scene):
         self.remove(e1)
         self.add(lorentz_force_arrow1, e1)
         self.play(Write(lorentz_force_arrow1), Write(lorentz_force_tex1))
-        self.wait()
+        self.wait(6-0)
         e1.clear_updaters()
         f = color_by_z([BLUE, RED], -6, 6)
         self.play(UpdateFromAlphaFunc(
             e1, lambda mob, alpha: mob.move_to(line.get_center() + (-0.02*line.get_center()[0], -8*alpha, 0.2))
         ), line.animate.set_color_by_rgb_func(lambda p: f((p[0], p[2], p[1]))))
-        self.wait()
+        self.wait(9-6)
         e_arrow = (Arrow(LEFT, RIGHT, stroke_color=GREEN, buff=0)
                    .add_updater(lambda mob: mob.put_start_and_end_on(
                        line.get_center() + (0, 0.5, 0),
@@ -67,7 +67,7 @@ class DynamicEMF(Scene):
         e_tex = (Tex(R"\vec{E}", color=GREEN)
                  .add_updater(lambda mob: mob.next_to(line.get_center() - (0, 0.5, 0), RIGHT)))
         self.play(Write(e_arrow), Write(e_tex))
-        self.wait()
+        self.wait(13-9)
         e2 = (Charge(ORIGIN, -1, 0.1, 0)
               .add_updater(lambda mob: mob.move_to(line.get_center() + (-0.02*line.get_center()[0], 0, 0.2))))
         lorentz_force_arrow2 = (Arrow(LEFT, RIGHT, stroke_color=YELLOW, buff=0)
@@ -94,7 +94,7 @@ class DynamicEMF(Scene):
                                       e2.get_center(),
                                       e2.get_center() + (0, 1.5, 0)
                                   ))
-        self.wait()
+        self.wait(20-13)
         line_up = Line(LEFT, RIGHT, stroke_color=YELLOW).add_updater(lambda mob: mob.put_start_and_end_on(
             line.get_center() + (0, 3, 0),
             line.get_center() + (-2, 3, 0)
@@ -114,7 +114,7 @@ class DynamicEMF(Scene):
         u_sign = (Tex(R"U", color=YELLOW)
                   .add_updater(lambda mob: mob.move_to(line.get_center() + (-1.5, 0, 0))))
         self.play(*(Write(mob) for mob in [line_up, line_down, arrow_up, arrow_down, u_sign]))
-        self.wait()
+        self.wait(40-20)
         ek_arrow = (Arrow(LEFT, RIGHT, stroke_color=GOLD, buff=0)
                     .add_updater(lambda mob: mob.put_start_and_end_on(
                         line.get_center() + (1.5, -0.5, 0),
@@ -123,14 +123,14 @@ class DynamicEMF(Scene):
         ek_tex = (Tex(R"\vec{E}_k", color=GOLD)
                   .add_updater(lambda mob: mob.next_to(ek_arrow, RIGHT)))
         self.play(Write(ek_arrow), Write(ek_tex))
-        self.wait()
+        self.wait(45-40)
         self.play(Transform(lorentz_force_tex2, Tex(R"-e\vec{E}_k", color=YELLOW)
                             .add_updater(lambda mob: mob.next_to(e2.get_center() - (0, 1.5, 0), RIGHT))))
-        self.wait()
+        self.wait(55-45)
         title = (Text("动生电动势", font_size=56)
                  .to_edge(UP))
         self.play(FadeIn(BackgroundRectangle(title)), Write(title))
-        self.wait()
+        self.wait(15+60-55)
 
 
 class DynamicEMFFormula(Scene):
@@ -190,7 +190,7 @@ class LenzsLawCorrect(Scene):
                        width=1.6, height=6, depth=1.6)
         ))
         self.add(line, asl_b)
-        self.wait()
+        self.wait(5)
         asl_e = AnimatedStreamLines(StreamLines(
             lambda x, y: np.array((-y, x)) / get_norm((x, y))**3,
             Axes((-1, 1, 1), (-1, 1, 1), width=1.2, height=1.2).move_to((1.2, 0, 0))
@@ -198,11 +198,12 @@ class LenzsLawCorrect(Scene):
         e_arrow = (Arc(PI*2/3, -PI/3, 1.4)
                    .set_color(GREEN).add_tip()
                    .rotate(PI/2, RIGHT, ORIGIN).shift((0, -0.5, 0)))
-        self.add(asl_e)
         self.play(Write(e_arrow))
-        self.wait()
+        self.wait(16)
+        self.add(asl_e)
+        self.wait(5)
         self.play(Write(mark))
-        self.wait()
+        self.wait(35)
 
 
 class LenzsLawWrong(Scene):
@@ -222,8 +223,6 @@ class LenzsLawWrong(Scene):
             ThreeDAxes((-1, 1, 1), (-3, 3, 1), (-1, 1, 1),
                        width=1.6, height=6, depth=1.6)
         ))
-        self.add(line, asl_b)
-        self.wait()
         asl_e = AnimatedStreamLines(StreamLines(
             lambda x, y: np.array((y, -x)) / get_norm((x, y))**3,
             Axes((-1, 1, 1), (-1, 1, 1), width=1.2, height=1.2).move_to((1.2, 0, 0))
@@ -231,11 +230,10 @@ class LenzsLawWrong(Scene):
         e_arrow = (Arc(PI/3, PI/3, 1.4)
                    .set_color(GREEN).add_tip()
                    .rotate(PI/2, RIGHT, ORIGIN).shift((0, -0.5, 0)))
-        self.add(asl_e)
-        self.play(Write(e_arrow))
-        self.wait()
+        self.add(line, asl_b, asl_e, e_arrow)
+        self.wait(5)
         self.play(Write(mark))
-        self.wait()
+        self.wait(30)
 
 
 class FaradaysLawView1(Scene):
@@ -408,15 +406,15 @@ class DisplacementCurrent(Scene):
         rect = SurroundingRectangle(e_tex)
         rect.shift(0.2*UP).rescale_to_fit(rect.get_height() + 0.5, 1)
         self.play(ShowCreation(rect))
-        self.wait()
+        self.wait(8)
         i_d_arrow = FillArrow(LEFT*2/3, RIGHT*2/3).set_color(BLUE_D).next_to(e_tex, DOWN)
         i_d_tex = Tex(R"I_d").set_color(BLUE_D).next_to(i_d_arrow, DOWN)
         self.play(Write(i_d_arrow))
-        self.wait()
+        self.wait(4)
         title = (Text("位移电流", font_size=56)
                  .to_edge(UP))
         self.play(FadeIn(BackgroundRectangle(title)), Write(title), Write(i_d_tex))
-        self.wait()
+        self.wait(20)
         buff = DEFAULT_MOBJECT_TO_MOBJECT_BUFFER
         left_ = (Prism(0.01, 3, 2)
                  .set_color(BLUE_D).set_opacity(0.6)
@@ -425,9 +423,9 @@ class DisplacementCurrent(Scene):
                   .set_color(BLUE_D).set_opacity(0.6)
                   .next_to(left, RIGHT, buff=buff))
         self.play(FadeIn(left_, shift=LEFT*buff), FadeIn(right_, shift=RIGHT*buff))
-        self.wait()
+        self.wait(2)
         self.play(FadeOut(left_, shift=RIGHT*buff), FadeOut(right_, shift=LEFT*buff))
-        self.wait()
+        self.wait(40)
 
 
 class DisplacementCurrentFormula(Scene):

@@ -572,9 +572,9 @@ class MovingChargeAsCurrent(Scene):
             run_time=animate_time, rate_func=linear, suspend_mobject_updating=True),
                   FadeIn(velocity, suspend_mobject_updating=False),
                   FadeIn(v_tex, suspend_mobject_updating=False))
-        self.wait(2)
+        self.wait(3)
         self.play(Write(current), Write(i_tex))
-        self.wait(2)
+        self.wait(3)
         self.play(UpdateFromAlphaFunc(
             q, lambda mob, alpha: (mob.move_to((
                 smooth(alpha)*FRAME_X_RADIUS,
@@ -589,14 +589,14 @@ class MovingChargeAsCurrent(Scene):
 
 
 class InductionLines(Scene):
-    """tested with commit 656f98fd in osMrPigHead/manimgl"""
+    """tested with commit dca378a6 in osMrPigHead/manimgl"""
     def construct(self) -> None:
         axes = Axes()
         asl = AnimatedStreamLines(StreamLines(u_bar_magnet_b, axes))
         bar_magnet = BarMagnet()
         self.add(asl, bar_magnet)
         self.play(FadeIn(bar_magnet))
-        self.wait(2)
+        self.wait(4)
         start = axes.c2p(3/2, 1)
         b = axes.c2p(*u_bar_magnet_b(3/2, 1)) / 2
         gradient = color_gradient([RED, BLUE], 32)
@@ -610,18 +610,19 @@ class InductionLines(Scene):
                         .shift((0, -b[1], 0)))
         arrow_s_text = (Text("S", font_size=32, color=BLUE)
                         .next_to(b_arrow, UL, buff=0.1))
+        self.wait(2)
         self.play(Write(arrow_n_text))
         self.play(Write(arrow_s_text))
-        self.wait()
+        self.wait(4)
         rect = (Rectangle(1.5, 1, color=YELLOW)
                 .move_to((-1.5, 1.25, 0)))
         self.play(ShowCreation(rect))
         self.wait()
         self.play(Transform(rect, Rectangle(1.5, 4, color=YELLOW)
                             .move_to((-5, 0, 0))))
-        self.wait()
+        self.wait(5)
         self.play(FadeOut(rect))
-        self.wait()
+        self.wait(2)
         field = VectorField(u_bar_magnet_b, axes).set_opacity(0.6)
         title = (Text("磁感应强度", font_size=56)
                  .to_edge(UP))
@@ -658,13 +659,13 @@ class UniformMagnetField(Scene):
         field = VectorField(lambda x, y: (0, 0), axes)
         self.add(field, magnet_n, magnet_s,
                  AnimatedStreamLines(StreamLines(lambda x, y: (1.5, 0.), axes)))
-        self.wait()
+        self.wait(4)
         title = (Text("匀强磁场", font_size=56)
                  .to_edge(UP))
         self.play(field.animate.become(VectorField(lambda x, y: (1., 0.), axes)),
                   FadeIn(BackgroundRectangle(title)),
                   Write(title))
-        self.wait()
+        self.wait(2)
 
 
 class BarMagnetField(Scene):
@@ -785,12 +786,11 @@ class LorentzForce(Scene):
         self.remove(q)
         self.add(force_arrow, force_tex, q)
         self.play(Write(force_arrow), Write(force_tex))
-        self.wait()
+        self.wait(3)
         self.play(FocusOn(q, suspend_mobject_updating=False))
-        self.wait()
         self.play(Indicate(velocity, suspend_mobject_updating=False),
                   Indicate(v_tex, suspend_mobject_updating=False))
-        self.wait()
+        self.wait(8)
 
 
 class LorentzForceFormula(Scene):
@@ -1005,7 +1005,7 @@ class NoPotentialForMagnet(Scene):
 
 
 class BiotSavartLaw(Scene):
-    """tested with commit 259640f5 in osMrPigHead/manimgl"""
+    """tested with commit a4210293 in osMrPigHead/manimgl"""
     def construct(self) -> None:
         def fb(x, y):
             return 2 * np.array((-y, x)) / get_norm((x, y)) ** 3
@@ -1030,10 +1030,10 @@ class BiotSavartLaw(Scene):
         self.wait()
         self.add(b_field)
         self.play(FadeOut(e_field))
-        self.wait(8)
+        self.wait(4)
         dot = Ball(axes2.c2p(3, 2), 0.1, color=WHITE)
         self.play(FadeIn(dot))
-        self.wait()
+        self.wait(2)
         lop = DashedLine(axes2.c2p(3, 2), axes2.c2p(0, 0), stroke_color=WHITE,
                          dash_length=0.1)
         vec = Arrow(axes2.c2p(3, 2),
@@ -1043,7 +1043,7 @@ class BiotSavartLaw(Scene):
         self.remove(i_tex, dot)
         self.add(lop, vec, i_tex, dot)
         self.play(ShowCreation(lop), Write(vec))
-        self.wait()
+        self.wait(16)
 
 
 class IntegralB(Scene):
@@ -1067,18 +1067,18 @@ class IntegralB(Scene):
         self.play(FadeIn(line), Write(i_arrow), Write(i_tex))
         self.wait()
         self.add(line_section)
-        self.play(fade_update(line, 0.4, src_opacity=1),
+        self.play(fade_update(line, 0.6, src_opacity=1),
                   Write(dl_tex))
         self.wait()
         spheres = []
-        spheres += [Sphere(radius=1).set_color(BLUE_D).set_opacity(0.2).move_to(line_section)]
+        spheres += [Sphere(radius=1).set_color(BLUE_D).set_opacity(0.4).move_to(line_section)]
         self.play(FadeIn(spheres[-1]), FadeOut(line_section), FadeOut(dl_tex))
         for i in range(-10, 10):
             spheres += [spheres[0].copy().shift((i*0.5, 0, 0))]
         self.play(*(FadeIn(sphere, time_span=(i*0.1, i*0.1+0.5)) for i, sphere in enumerate(spheres[1:])))
         self.wait()
         cylinder = Cylinder(radius=1, height=30).rotate(PI/2, UP).set_color(BLUE_D)
-        self.play(fade_update(cylinder, 0.2),
+        self.play(fade_update(cylinder, 0.4),
                   *(FadeOut(sphere) for sphere in spheres))
         self.wait()
         cylinder_section = (Cylinder(radius=1, height=2.5).rotate(PI/2, UP)
@@ -1101,4 +1101,4 @@ class SpreadToSphere(Scene):
         self.play(UpdateFromAlphaFunc(q_spread, lambda mob, alpha: q_spread.become(
             Sphere(radius=smooth(alpha)*3).set_opacity(1-(1-0.2)*smooth(alpha)).set_color(BLUE_D)
         ), rate_func=linear))
-        self.wait()
+        self.wait(8)
